@@ -9,5 +9,7 @@
 !FreeRTOS_simulator/**
 !COMPSYS723\ 2020\ FreeRTOS\ Resources/**
 
+!Nios/nios2.sopcinfo
+
 !Nios/software/freertos_test/freertos/**
 !Nios/software/freertos_test/freertos_semaphore.c
