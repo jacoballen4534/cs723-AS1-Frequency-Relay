@@ -1,0 +1,13 @@
+# Ignore everything
+*
+!*/
+
+# But not these files...
+!.gitignore
+!COMPSYS723\ 2020\ FreeRTOS\ Extra.pdf
+!COMPSYS723\ 2020\ FreeRTOS\ Lab.pdf
+!FreeRTOS_simulator/**
+!COMPSYS723\ 2020\ FreeRTOS\ Resources/**
+
+!Nios/software/freertos_test/freertos/**
+!Nios/software/freertos_test/freertos_semaphore.c
