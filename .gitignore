@@ -11,5 +11,6 @@
 
 !Nios/nios2.sopcinfo
 
-!Nios/software/freertos_test/freertos/**
-!Nios/software/freertos_test/freertos_semaphore.c
+!Nios/software/gp21_cs723_a1/freertos/**
+!Nios/software/gp21_cs723_a1/*.c
+!Nios/software/gp21_cs723_a1/*.h
