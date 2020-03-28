@@ -18,9 +18,12 @@
 #define PRINT_STATUS_TASK_PRIORITY 14
 #define GETSEM_TASK1_PRIORITY      13
 #define GETSEM_TASK2_PRIORITY      12
-#define RECEIVE_TASK1_PRIORITY    11
-#define RECEIVE_TASK2_PRIORITY    10
-#define SEND_TASK_PRIORITY        9
+#define RECEIVE_TASK1_PRIORITY     11
+#define RECEIVE_TASK2_PRIORITY     10
+#define SEND_TASK_PRIORITY         9
+#define COUNTER_TASK_PRIORITY	   8
+#define lcd_task_1_priority	   	   13
+#define lcd_task_2_priority	   	   14
 
 // Definition of Message Queue
 #define   MSG_QUEUE_SIZE  30
@@ -31,6 +34,12 @@ TaskHandle_t xHandle;
 
 // Definition of Semaphore
 SemaphoreHandle_t shared_resource_sem;
+
+// LCD defines
+#define ESC 27
+#define CLEAR_LCD_STRING "[2J"
+FILE *lcd;
+
 
 // globals variables
 unsigned int number_of_messages_sent = 0;
@@ -146,6 +155,7 @@ void receive_task2(void *pvParameters)
 
 int main(int argc, char* argv[], char* envp[])
 {
+	lcd = fopen(CHARACTER_LCD_NAME, "w");
 	initOSDataStructs();
 	initCreateTasks();
 	vTaskStartScheduler();
@@ -153,6 +163,32 @@ int main(int argc, char* argv[], char* envp[])
 	return 0;
 }
 
+void counter_task(void *pvParameters) {
+	int counter = 0;
+	while (1){
+		counter++;
+		IOWR(SEVEN_SEG_BASE,0 ,counter);
+		vTaskDelay(1000);
+	}
+}
+
+void lcd_task1(void *pvParameters) {
+	while (1){
+		fprintf(lcd, "%c%s", ESC, CLEAR_LCD_STRING);
+		fprintf(lcd, "\nLCD task 1\n");
+		vTaskDelay(1000);
+
+	}
+}
+void lcd_task2(void *pvParameters) {
+	while (1){
+		fprintf(lcd, "%c%s", ESC, CLEAR_LCD_STRING);
+		fprintf(lcd, "\nLCD task 2\n");
+		vTaskDelay(1000);
+
+
+	}
+}
 // This function simply creates a message queue and a semaphore
 int initOSDataStructs(void)
 {
@@ -169,6 +205,8 @@ int initCreateTasks(void)
 	xTaskCreate(receive_task1, "receive_task1", TASK_STACKSIZE, NULL, RECEIVE_TASK1_PRIORITY, NULL);
 	xTaskCreate(receive_task2, "receive_task2", TASK_STACKSIZE, NULL, RECEIVE_TASK2_PRIORITY, NULL);
 	xTaskCreate(send_task, "send_task", TASK_STACKSIZE, NULL, SEND_TASK_PRIORITY, NULL);
-	xTaskCreate(print_status_task, "print_status_task", TASK_STACKSIZE, NULL, PRINT_STATUS_TASK_PRIORITY, NULL);
+	xTaskCreate(counter_task, "counter_task", TASK_STACKSIZE, NULL, COUNTER_TASK_PRIORITY, NULL);
+	xTaskCreate(lcd_task1, "lcd_task1", TASK_STACKSIZE, NULL, lcd_task_1_priority, NULL);
+	xTaskCreate(lcd_task2, "lcd_task2", TASK_STACKSIZE, NULL, lcd_task_2_priority, NULL);
 	return 0;
 }
