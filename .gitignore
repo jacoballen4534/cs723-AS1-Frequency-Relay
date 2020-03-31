@@ -4,12 +4,21 @@
 
 # But not these files...
 !.gitignore
+# Documentation
 !COMPSYS723\ 2020\ FreeRTOS\ Extra.pdf
 !COMPSYS723\ 2020\ FreeRTOS\ Lab.pdf
+!COMPSYS\ 723\ Assignment\ 1\ 2020.pdf
+!Eclipse\ Simulator\ Setup\ Instructions.txt
+!Nios\ Setup\ Instructions.txt
+!Layout\ Plan.jpg
+# FreeRTOS simulation resources
 !FreeRTOS_simulator/**
 !COMPSYS723\ 2020\ FreeRTOS\ Resources/**
 
 !Nios/nios2.sopcinfo
+
+# Simulated system
+!Simulations/**
 
 !Nios/software/gp21_cs723_a1/freertos/**
 !Nios/software/gp21_cs723_a1/*.c
