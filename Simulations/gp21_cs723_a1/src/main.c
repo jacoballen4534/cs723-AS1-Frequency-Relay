@@ -19,9 +19,8 @@ int initFrequencyAnalyser(void);
 void handleTaskCreateError(BaseType_t taskStatus, char* taskName);
 
 // Forward Declarations of freq_handler tasks
-void mockFreq   freqSampleComplete(void *pvParameters);
+void mockFrequencyAnalyser(void *pvParameters);
 void processFrequency(void *pvParameters);
-
 
 int main(int argc, char* argv[], char* envp[])
 {
@@ -31,7 +30,7 @@ int main(int argc, char* argv[], char* envp[])
 	vTaskStartScheduler();
 
 	// In case if the scheduler failed to start.
-//	for(;;);
+	for(;;);
 
 	return 0;
 }
@@ -42,8 +41,8 @@ int initFrequencyAnalyser(void)
 {
 	BaseType_t taskStatus;
 
-	taskStatus = xTaskCreate(freqSampleComplete, "freqSampleComplete", TASK_STACKSIZE, NULL, FREQ_ISR_TASK_PRIORITY, NULL);
-	handleTaskCreateError(taskStatus, "freqSampleComplete");
+	taskStatus = xTaskCreate(mockFrequencyAnalyser, "mockFrequencyAnalyser", TASK_STACKSIZE, NULL, FREQ_ISR_TASK_PRIORITY, NULL);
+	handleTaskCreateError(taskStatus, "mockFrequencyAnalyser");
 
 	taskStatus = xTaskCreate(processFrequency, "processFrequency", TASK_STACKSIZE, NULL, FREQ_ANALYSER_TASK_PRIORITY, NULL);
 	handleTaskCreateError(taskStatus, "processFrequency");
