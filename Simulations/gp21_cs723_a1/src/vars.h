@@ -3,7 +3,7 @@
 
 #include "queue.h"
 
-QueueHandle_t frequencyValueQueue;
+QueueHandle_t newFreqQ;
 
 
 #endif /* SHARED_VARS_H */

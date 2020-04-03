@@ -6,6 +6,9 @@
 
 // Definition of Task Priorities
 #define FREQ_ANALYSER_TASK_PRIORITY 1
-#define FREQ_ISR_TASK_PRIORITY 5
+#define FREQ_ISR_TASK_PRIORITY 2
+
+#define MOCK_KEYBOARD_ISR_TASK_PRIORITY 1
+
 
 #endif /* TASK_MACROS_H */
