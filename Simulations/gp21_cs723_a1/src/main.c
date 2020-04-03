@@ -3,11 +3,12 @@
 // FreeRTOS includes
 #include "FreeRTOS.h"
 #include "task.h"
-#include "sharedVars.h"
+#include "vars.h"
 
 // Forward Declarations of task initialisers
 int initFrequencyRelay(void);
 int initFrequencyAnalyser(void);
+int initUserInput(void);
 
 // declare local functions
 void initSharedVars(void);
@@ -20,6 +21,7 @@ int main(int argc, char* argv[], char* envp[])
 	// Initialise all tasks
 	initFrequencyRelay();
 	initFrequencyAnalyser();
+	initUserInput();
 
 	// Starting the scheduler
 	vTaskStartScheduler();
