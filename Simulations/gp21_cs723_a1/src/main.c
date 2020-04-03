@@ -6,20 +6,19 @@
 #include "vars.h"
 
 // Forward Declarations of task initialisers
-int initFrequencyRelay(void);
+int initMockFrequencyRelay(void);
 int initFrequencyAnalyser(void);
 int initUserInput(void);
 
 // declare local functions
 void initSharedVars(void);
 
-
-int main(int argc, char* argv[], char* envp[])
+int main(int argc, char *argv[], char *envp[])
 {
 	initSharedVars();
 
 	// Initialise all tasks
-	initFrequencyRelay();
+	initMockFrequencyRelay();
 	initFrequencyAnalyser();
 	initUserInput();
 
@@ -30,10 +29,11 @@ int main(int argc, char* argv[], char* envp[])
 
 void initSharedVars(void)
 {
-	// Creating a queue to store frequency readings
-	frequencyValueQueue = xQueueCreate(5, sizeof(double));
-	if (frequencyValueQueue == 0) {
+	// Creating a queue to buffer frequency readings.
+	newFreqQ = xQueueCreate(20, sizeof(unsigned int));
+	if (newFreqQ == 0)
+	{
 		fputs("Could not create a queue", stderr);
+		exit(1);
 	}
-
 }
