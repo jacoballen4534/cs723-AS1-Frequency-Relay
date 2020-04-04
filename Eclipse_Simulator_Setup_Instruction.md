@@ -112,3 +112,9 @@ External Tools should now be one of the options on the main page.
 If not run via: Run > External Tools > cmd
 
 _Note_: This should open a command prompt window which the simulator runs in, this window will need to be in focus for keyboard events to be recognised.
+
+# Common Issues
+
+- `c:/mingw/bin/../lib/gcc/mingw32/8.2.0/../../../../mingw32/bin/ld.exe: cannot open output file gp21_cs723_a1.exe: Permission denied`
+  - This is likely due to an instance of the executable already running.
+  - Open task manager and kill the process called `gp21_cs723_a1`
