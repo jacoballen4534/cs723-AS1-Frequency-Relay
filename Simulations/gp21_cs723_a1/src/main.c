@@ -6,7 +6,10 @@
 #include "vars.h"
 
 // Forward Declarations of task initialisers
+#ifdef __SIMULATION__
 int initMockFrequencyRelay(void);
+#endif
+
 int initFrequencyAnalyser(void);
 int initUserInput(void);
 
@@ -17,7 +20,10 @@ int main(int argc, char *argv[], char *envp[])
 {
 	initSharedVars();
 
+#ifdef __SIMULATION__
 	initMockFrequencyRelay();
+#endif
+
 	// Initialise all tasks
 	initFrequencyAnalyser();
 	initUserInput();

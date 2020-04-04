@@ -8,7 +8,6 @@
 
 //keyToggled = 1
 
-
 //ISR Keyboard
 /*
  * On ISR trigger, add key value to queue
@@ -36,7 +35,6 @@
 //Update maintenance mode in LoadControlTask
 //  UserInputTask -> KeyToggled -> LoadControlTask
 
-
 #include <stdio.h>
 
 #include "mockSystem.h"
@@ -50,42 +48,42 @@
 #include "taskMacros.h"
 
 // Local Function Prototypes
-void keyboard_isr(void* context, alt_u32 id);
-
+void keyboard_isr(void *context, alt_u32 id);
 
 // This function initialises the process that captures keyboard inputs
 int initUserInput(void)
 {
-	alt_up_ps2_dev * keyboard_device = alt_up_ps2_open_dev(PS2_NAME);
+	alt_up_ps2_dev *keyboard_device = alt_up_ps2_open_dev(PS2_NAME);
 
-	if(keyboard_device == NULL){
+	if (keyboard_device == NULL)
+	{
 		fputs("can't find PS/2 device\n", stderr);
 		exit(1);
 	}
 
-	BaseType_t taskStatus;
+#ifdef __SIMULATION__
 	initMockKeyboard(keyboard_device);
+#endif
 
 	alt_up_ps2_clear_fifo(keyboard_device);
 
 	// register the PS/2 interrupt
 	alt_irq_register(PS2_IRQ, keyboard_device, keyboard_isr);
 
-	IOWR_8DIRECT(PS2_BASE,4,1);
+	IOWR_8DIRECT(PS2_BASE, 4, 1);
 	return 0;
 }
 
-
-void keyboard_isr(void* context, alt_u32 id)
+void keyboard_isr(void *context, alt_u32 id)
 {
 	char ascii;
 	int status = 0;
 	unsigned char key = 0;
 	KB_CODE_TYPE decode_mode;
-	status = decode_scancode(context, &decode_mode , &key , &ascii);
-	if ( status == 0 ) //success
+	status = decode_scancode(context, &decode_mode, &key, &ascii);
+	if (status == 0) //success
 	{
-		printf ( "New keyboard input %c\n code: %d\n", ascii, (int)ascii);
+		printf("New keyboard input %c\n", ascii);
 		fflush(stdout);
 	}
 }
