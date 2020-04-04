@@ -29,6 +29,15 @@ int alt_irq_register(alt_u32 id, void *context, void (*handler)(void *, alt_u32)
 	{
 		freq_analyser_isr_handler = handler;
 	}
+	else if (id == PS2_IRQ) // registering keyboard ISR handler
+	{
+		keyboard_isr_handler = handler;
+		keyboard_context = context;
+	}
 
 	return 0;
 }
+
+void IOWR_8DIRECT(int base, int offset, int data) {}
+void IOWR_16DIRECT(int base, int offset, int data) {}
+void IOWR_32DIRECT(int base, int offset, int data) {}
