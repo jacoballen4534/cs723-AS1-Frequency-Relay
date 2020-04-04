@@ -17,8 +17,8 @@ int main(int argc, char *argv[], char *envp[])
 {
 	initSharedVars();
 
-	// Initialise all tasks
 	initMockFrequencyRelay();
+	// Initialise all tasks
 	initFrequencyAnalyser();
 	initUserInput();
 

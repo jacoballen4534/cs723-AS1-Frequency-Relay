@@ -38,7 +38,10 @@
 
 
 #include <stdio.h>
-#include <conio.h>
+
+#include "mockSystem.h"
+#include "mockKeyboard.h"
+#include "mockIO.h"
 
 // Scheduler includes
 #include "FreeRTOS.h"
@@ -46,41 +49,43 @@
 #include "queue.h"
 #include "taskMacros.h"
 
-
-#define MOCK_KEYBOARD_POLL_DELAY 10
-#define PRINT_LETTER_DELAY 10
-
-// Forward Declarations of task helper
-void handleTaskCreateError(BaseType_t taskStatus, char* taskName);
-
 // Local Function Prototypes
-void mockKeyboardInput(void *pvParameters);
+void keyboard_isr(void* context, alt_u32 id);
+
 
 // This function initialises the process that captures keyboard inputs
 int initUserInput(void)
 {
+	alt_up_ps2_dev * keyboard_device = alt_up_ps2_open_dev(PS2_NAME);
+
+	if(keyboard_device == NULL){
+		fputs("can't find PS/2 device\n", stderr);
+		exit(1);
+	}
+
 	BaseType_t taskStatus;
+	initMockKeyboard(keyboard_device);
 
-	taskStatus = xTaskCreate(mockKeyboardInput, "mockKeyboardInput", TASK_STACKSIZE, NULL, MOCK_KEYBOARD_ISR_TASK_PRIORITY, NULL);
-	handleTaskCreateError(taskStatus, "mockKeyboardInput");
+	alt_up_ps2_clear_fifo(keyboard_device);
 
+	// register the PS/2 interrupt
+	alt_irq_register(PS2_IRQ, keyboard_device, keyboard_isr);
+
+	IOWR_8DIRECT(PS2_BASE,4,1);
 	return 0;
 }
 
 
-// Simulate the hardware interrupts from keyboard events
-void mockKeyboardInput(void *pvParameters)
-   {
-	char keyPressedAscii = '\0';
-   	while(1)
-   	{
-   		/* Has a key been pressed? */
-   		if( _kbhit() != 0 )
-   		{
-   			keyPressedAscii = _getch();
-			printf("Key pressed, %c\n", keyPressedAscii);
-			fflush(stdout);
-   		}
-
-   	}
+void keyboard_isr(void* context, alt_u32 id)
+{
+	char ascii;
+	int status = 0;
+	unsigned char key = 0;
+	KB_CODE_TYPE decode_mode;
+	status = decode_scancode(context, &decode_mode , &key , &ascii);
+	if ( status == 0 ) //success
+	{
+		printf ( "New keyboard input %c\n code: %d\n", ascii, (int)ascii);
+		fflush(stdout);
+	}
 }
