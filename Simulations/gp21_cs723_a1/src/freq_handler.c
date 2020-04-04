@@ -13,7 +13,6 @@
 #include "task.h"
 #include "queue.h"
 #include "taskMacros.h"
-#include "mockIO.h"
 #include "vars.h"
 
 #define SAMPLING_FREQUENCY 16000.0
@@ -24,7 +23,6 @@ void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
 // Local Function Prototypes
 void processFrequency(void *pvParameters);
 void freq_isr();
-
 
 // This function initialises the freq_handler tasks
 int initFrequencyAnalyser(void)
@@ -50,15 +48,17 @@ void processFrequency(void *pvParameters)
 	{
 
 		BaseType_t queueReceiveStatus = xQueueReceive(newFreqQ, (void *)&ADCSamples, portMAX_DELAY);
-		if (queueReceiveStatus > 0) {
+		if (queueReceiveStatus > 0)
+		{
 			latestFrequencySample = SAMPLING_FREQUENCY / (double)ADCSamples;
-		} else {
+		}
+		else
+		{
 			// Something went wrong
 			latestFrequencySample = 0;
 		}
 
 		printf("%f Hz\n", latestFrequencySample);
-
 
 		//calculate RoC
 		roc = (latestFrequencySample - previousFrequencySample) * 2.0 * latestFrequencySample * previousFrequencySample / (latestFrequencySample + previousFrequencySample);
@@ -71,7 +71,6 @@ void processFrequency(void *pvParameters)
 
 void freq_isr()
 {
-
 	unsigned int newReading = IORD(FREQUENCY_ANALYSER_BASE, 0);
 	BaseType_t queueSendStatus = xQueueSendFromISR(newFreqQ, (void *)&newReading, NULL);
 
@@ -85,4 +84,3 @@ void freq_isr()
 	}
 	fflush(stdout);
 }
-

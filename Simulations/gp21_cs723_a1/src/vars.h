@@ -5,5 +5,4 @@
 
 QueueHandle_t newFreqQ;
 
-
 #endif /* SHARED_VARS_H */
