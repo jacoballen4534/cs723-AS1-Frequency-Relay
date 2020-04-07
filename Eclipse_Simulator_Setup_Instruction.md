@@ -5,7 +5,7 @@
 
    - File > New > C/C++ Project
    - C Managed Build > Next
-     - Project Name = `cs723-AS1`
+     - Project Name = `gp21_cs723_a1`
      - Project type = `Executable > Empty Project`
      - Toolchains = `MinGW GCC`
    - Finish
@@ -14,6 +14,7 @@
 
    - Add FreeRTOS_Source to the project by dragging the folder into eclipse and selecting the copy files and folders option
    - Create a folder called config and put the FreeRTOSConfig.h file into it.
+   - Create a folder called mock. This is where all hardware abstraction interfaces will go.
    - Create a folder called src and put the entry point file into it.  
      _Note:_ All additional files should also go in the src folder.
 

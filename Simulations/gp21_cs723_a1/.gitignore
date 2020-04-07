@@ -1,2 +1,4 @@
-/Debug/
-/Release/
+# Ignore all object and dependency files while keeping all required files for make.
+/Build/**/*.o
+/Build/**/*.d
+/Build/*.exe

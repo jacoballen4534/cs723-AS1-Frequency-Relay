@@ -16,7 +16,7 @@
 !COMPSYS723\ 2020\ FreeRTOS\ Resources/**
 
 !Nios/nios2.sopcinfo
-
+!/Makefile
 # Simulated system
 !Simulations/**
 
