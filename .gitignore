@@ -17,6 +17,7 @@
 
 !Nios/nios2.sopcinfo
 !/Makefile
+!/shared/**
 # Simulated system
 !Simulations/**
 
