@@ -1,9 +1,15 @@
 #include <stdio.h>
+#include "vars.h"
 
-// FreeRTOS includes
+#ifdef __SIMULATION__
+// Scheduler includes
 #include "FreeRTOS.h"
 #include "task.h"
-#include "vars.h"
+#else
+// Scheduler includes
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#endif
 
 // Forward Declarations of task initialisers
 #ifdef __SIMULATION__

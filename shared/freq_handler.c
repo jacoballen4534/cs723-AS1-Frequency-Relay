@@ -4,17 +4,26 @@
 //communicate frequencies and RoCs to display task over shared memory
 //2-deep FIFO for current and last value
 
-
 #include <stdio.h>
+#include "taskMacros.h"
+#include "vars.h"
+
+#ifdef __SIMULATION__
 #include "mockIO.h"
 #include "mockSystem.h"
-
 // Scheduler includes
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-#include "taskMacros.h"
-#include "vars.h"
+#else
+#include "io.h"
+#include "system.h"
+#include "altera_avalon_pio_regs.h"
+// Scheduler includes
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#endif
 
 #define SAMPLING_FREQUENCY 16000.0
 

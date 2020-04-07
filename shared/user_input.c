@@ -36,16 +36,27 @@
 //  UserInputTask -> KeyToggled -> LoadControlTask
 
 #include <stdio.h>
+#include "taskMacros.h"
 
+#ifdef __SIMULATION__
 #include "mockSystem.h"
 #include "mockKeyboard.h"
 #include "mockIO.h"
-
 // Scheduler includes
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-#include "taskMacros.h"
+#else
+#include "io.h"
+#include "system.h"
+#include "altera_up_avalon_ps2.h"
+#include "altera_up_ps2_keyboard.h"
+#include "sys/alt_irq.h"
+// Scheduler includes
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#endif
 
 // Local Function Prototypes
 void keyboard_isr(void *context, alt_u32 id);
