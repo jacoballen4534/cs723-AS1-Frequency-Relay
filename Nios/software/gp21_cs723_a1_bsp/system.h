@@ -2,9 +2,9 @@
  * system.h - SOPC Builder system and BSP software package information
  *
  * Machine generated for CPU 'nios2' in SOPC Builder design 'nios2'
- * SOPC Builder design path: C:/Users/Logan/Desktop/repos/cs723-AS1/Nios/nios2.sopcinfo
+ * SOPC Builder design path: ../../nios2.sopcinfo
  *
- * Generated: Sun Mar 29 12:46:40 NZDT 2020
+ * Generated: Wed Apr 08 23:58:38 NZST 2020
  */
 
 /*
@@ -151,8 +151,8 @@
  */
 
 #define ALT_DEVICE_FAMILY "Cyclone IV E"
-#define ALT_LEGACY_INTERRUPT_API_PRESENT
 #define ALT_IRQ_BASE NULL
+#define ALT_LEGACY_INTERRUPT_API_PRESENT
 #define ALT_LOG_PORT "/dev/null"
 #define ALT_LOG_PORT_BASE 0x0
 #define ALT_LOG_PORT_DEV null
