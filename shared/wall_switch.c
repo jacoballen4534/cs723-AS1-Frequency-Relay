@@ -1,2 +1,80 @@
+#include <system.h>
+#include <altera_avalon_pio_regs.h>
+#include "taskMacros.h"
+#include <stdio.h>
+#include "vars.h"
+
+#ifdef __SIMULATION__
+#include "mockIO.h"
+#include "mockSystem.h"
+// Scheduler includes
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "semphr.h"
+#else
+#include "io.h"
+#include "system.h"
+#include "altera_avalon_pio_regs.h"
+// Scheduler includes
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "freertos/semphr.h"
+#endif
+
 //contains task which polls switches periodically to determine values
 //communicates status of all switches to load control task via shared memory (not necessary to mutex?)
+
+// GLOBALS
+uint8_t switchVal[NUM_SWITCHES] = {0};
+SemaphoreHandle_t xSwitchMutex = NULL;
+/////////////////////////////////////////
+
+void vWallSwitchFrequencyTask(void *pvParameters);
+void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
+
+int initWallSwitches(void)
+{
+    // Start vWallSwitchFrequencyTask task
+    BaseType_t taskStatus = xTaskCreate(vWallSwitchFrequencyTask, "vWallSwitchFrequencyTask", TASK_STACKSIZE, NULL, WALL_SWITCH_TASK_PRIORITY, NULL);
+    handleTaskCreateError(taskStatus, "vWallSwitchFrequencyTask");
+
+    xSwitchMutex = xSemaphoreCreateMutex();
+    return 0;
+}
+
+void intToArray(uint8_t * buf, uint32_t input, uint32_t array_length)
+{
+    uint32_t mask = 0x0001;
+    int i;
+    for(i = array_length - 1 ; i >= 0; i--)
+    {
+        buf[i] = (input & mask);
+        input = input >> 1;
+    }
+}
+
+void vWallSwitchFrequencyTask(void *pvParameters)
+{   
+    while(1)
+    {
+        uint32_t rawSwitchValue = IORD_ALTERA_AVALON_PIO_DATA(SLIDE_SWITCH_BASE);
+        //FIXME: Mutex guard
+        if(xSemaphoreTake( xSwitchMutex, ( TickType_t ) 10 ) == pdTRUE )
+        {
+            intToArray(switchVal, rawSwitchValue, NUM_SWITCHES);
+            xSemaphoreGive(xSwitchMutex);
+        }
+        else vTaskDelay(100);
+        
+        int i;
+        for(i = 0; i < NUM_SWITCHES; i++)
+        {
+            printf("Switch %d: %u ", i, switchVal[i]);
+        }
+        printf("\r\n");
+
+        vTaskDelay(100);
+    }
+}

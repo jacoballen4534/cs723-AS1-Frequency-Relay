@@ -9,6 +9,7 @@
 #include "freertos/queue.h"
 #endif
 
+#define NUM_SWITCHES 18
 QueueHandle_t newFreqQ;
 
 #endif /* SHARED_VARS_H */

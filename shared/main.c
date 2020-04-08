@@ -18,6 +18,7 @@ int initMockFrequencyRelay(void);
 
 int initFrequencyAnalyser(void);
 int initUserInput(void);
+int initWallSwitches(void);
 
 // declare local functions
 void initSharedVars(void);
@@ -31,8 +32,9 @@ int main(int argc, char *argv[], char *envp[])
 #endif
 
 	// Initialise all tasks
-	initFrequencyAnalyser();
+	//initFrequencyAnalyser();
 	initUserInput();
+	initWallSwitches();
 
 	// Starting the scheduler
 	vTaskStartScheduler();
