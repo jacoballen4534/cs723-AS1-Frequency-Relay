@@ -4,25 +4,32 @@
 
 # But not these files...
 !.gitignore
-# Documentation
-!COMPSYS723\ 2020\ FreeRTOS\ Extra.pdf
-!COMPSYS723\ 2020\ FreeRTOS\ Lab.pdf
-!COMPSYS\ 723\ Assignment\ 1\ 2020.pdf
-!Eclipse_Simulator_Setup_Instruction.md
-!Nios\ Setup\ Instructions.txt
-!Layout\ Plan.jpg
-# FreeRTOS simulation resources
-!FreeRTOS_simulator/**
-!COMPSYS723\ 2020\ FreeRTOS\ Resources/**
-!Documentation/**
 
-!Nios/nios2.sopcinfo
+# Given examples and other resources
+!Example_Resources/**
+
+# Documentation
+!Documentation/**
+!/README.md
+
+# Quartus .sof and .pof program files
+!Quartus/**
+
+# Top level builder
 !/Makefile
+
+# Shared source files
 !/shared/**
-# Simulated system
+
+# Simulator files
 !Simulations/**
 
+# Real system files
+!Nios/nios2.sopcinfo
 !Nios/software/gp21_cs723_a1/Makefile
-
 !Nios/software/gp21_cs723_a1_bsp/**
 Nios/software/gp21_cs723_a1_bsp/obj/**
+
+
+
+

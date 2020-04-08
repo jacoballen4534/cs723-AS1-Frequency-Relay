@@ -1,8 +1,0 @@
-Create a new blank project called gp21_cs723_a1
-Pull the files from repo.
-Select all files (including inside freertos folder) -> right click and Add to Nios ii build
-Open gp21_cs723_a1_bsp > system.h and replace
-	#define ALT_ENHANCED_INTERRUPT_API_PRESENT with
-	#define ALT_LEGACY_INTERRUPT_API_PRESENT
-Right click the gp21_cs723_a1_bsp > build project
-Right click the gp21_cs723_a1 > build project
