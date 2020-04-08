@@ -43,6 +43,7 @@ void initSharedVars(void)
 {
 	// Creating a queue to buffer frequency readings.
 	newFreqQ = xQueueCreate(20, sizeof(unsigned int));
+
 	if (newFreqQ == 0)
 	{
 		fputs("Could not create a queue", stderr);

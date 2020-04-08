@@ -21,6 +21,8 @@
 # Simulated system
 !Simulations/**
 
-!Nios/software/gp21_cs723_a1/freertos/**
 !Nios/software/gp21_cs723_a1/*.c
 !Nios/software/gp21_cs723_a1/*.h
+
+!Nios/software/gp21_cs723_a1_bsp/**
+Nios/software/gp21_cs723_a1_bsp/obj/**
