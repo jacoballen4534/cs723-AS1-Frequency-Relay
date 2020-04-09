@@ -10,6 +10,8 @@ if [ $1 ] && [ $1 == "simulator" ]; then
     elif [ -z $2 ] || ([ $2 ] &&  [ $2 == "all" ]); then
         cd Simulations/gp21_cs723_a1/Build
         make all
+        cd ../../..
+        start "${PROJECT_PATH}/Simulations/gp21_cs723_a1/Build/gp21_cs723_a1_simulator.exe"
     fi
 elif [ $1 ] && [ $1 == "nios" ]; then
     echo "Moving to nios2 folder"
