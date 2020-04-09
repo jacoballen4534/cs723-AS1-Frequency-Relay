@@ -6,18 +6,20 @@
 C_SRCS += \
 $(SIMULATOR_PROJECT_PATH)/mock/mockIO.c \
 $(SIMULATOR_PROJECT_PATH)/mock/mockKeyboard.c \
-$(SIMULATOR_PROJECT_PATH)/mock/mockfrequencyRelay.c 
+$(SIMULATOR_PROJECT_PATH)/mock/mockfrequencyRelay.c \
+$(SIMULATOR_PROJECT_PATH)/mock/mockSwitches.c 
 
 OBJS += \
 $(BUILD_FOLDER_PATH)/mock/mockIO.o \
 $(BUILD_FOLDER_PATH)/mock/mockKeyboard.o \
-$(BUILD_FOLDER_PATH)/mock/mockfrequencyRelay.o 
+$(BUILD_FOLDER_PATH)/mock/mockfrequencyRelay.o \
+$(BUILD_FOLDER_PATH)/mock/mockSwitches.o 
 
 C_DEPS += \
 $(BUILD_FOLDER_PATH)/mock/mockIO.d \
 $(BUILD_FOLDER_PATH)/mock/mockKeyboard.d \
-$(BUILD_FOLDER_PATH)/mock/mockfrequencyRelay.d 
-
+$(BUILD_FOLDER_PATH)/mock/mockfrequencyRelay.d \
+$(BUILD_FOLDER_PATH)/mock/mockSwitches.d
 
 # Each subdirectory must supply rules for building sources it contributes
 $(BUILD_FOLDER_PATH)/mock/%.o: $(SIMULATOR_PROJECT_PATH)/mock/%.c

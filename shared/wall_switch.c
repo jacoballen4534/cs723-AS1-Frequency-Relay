@@ -46,7 +46,7 @@ void intToArray(uint8_t * buf, uint32_t input, uint32_t array_length)
 {
     uint32_t mask = 0x0001;
     int i;
-    for(i = array_length - 1 ; i >= 0; i--)
+    for(i = 0 ; i < array_length; i++)
     {
         buf[i] = (input & mask);
         input = input >> 1;

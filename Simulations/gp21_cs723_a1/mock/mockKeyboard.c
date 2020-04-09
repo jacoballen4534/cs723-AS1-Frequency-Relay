@@ -1,4 +1,5 @@
 #include "mockKeyboard.h"
+#include "mockSwitches.h"
 #include "mockSystem.h"
 #include "mockIsrHandlers.h"
 
@@ -69,17 +70,34 @@ void mockKeyboardInput(void *pvParameters)
 		/* Has a key been pressed? */
 		if (_kbhit() != 0)
 		{
-			// Put key in keyboard_device structure.
-			keyboard_device->pressedKeyAsciiValue = _getch();
+			//Since switches are simulated from function key input, we should check for function keys
+			int keyboardInput = _getch(); //NOTE: this is Windows specific, not sure what the better way would be
 
-			// trigger keyboard isr.
-			if (keyboard_isr_handler)
+			if(keyboardInput == 0 || keyboardInput == 224) //special keyboard input
 			{
-				(*keyboard_isr_handler)(keyboard_context, 0);
+				//we have to check _getch() again.
+				keyboardInput = _getch();
+				if (keyboardInput >= 59 && keyboardInput <= 68) //F1-F10
+				{
+					int switchIndex = keyboardInput - 59;
+					//flip the bit associated with that key position
+					switchValue = switchValue ^ (1U << switchIndex);
+				}
 			}
 			else
 			{
-				printf("New keyboard event. No keyboard_isr_handler defined\n");
+				// Put key in keyboard_device structure.
+				keyboard_device->pressedKeyAsciiValue = keyboardInput;
+
+				// trigger keyboard isr.
+				if (keyboard_isr_handler)
+				{
+					(*keyboard_isr_handler)(keyboard_context, 0);
+				}
+				else
+				{
+					printf("New keyboard event. No keyboard_isr_handler defined\n");
+				}
 			}
 		}
 	}

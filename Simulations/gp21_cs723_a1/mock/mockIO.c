@@ -1,6 +1,7 @@
 #include "mockIsrHandlers.h"
 #include "mockIO.h"
 #include "mockSystem.h"
+#include "mockSwitches.h"
 
 #define NUMBER_OF_DUMMY_FREQUENCY_DATA_SAMPLES 10
 
@@ -19,7 +20,8 @@ unsigned int IORD(int base, int regnum)
 	}
 	else if (base == SLIDE_SWITCH_BASE)
 	{
-		// TODO: implament mock switches.
+		// read switch status variable
+		return switchValue;
 	}
 
 	return 0;
