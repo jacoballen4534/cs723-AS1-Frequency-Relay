@@ -1,7 +1,5 @@
-#include <system.h>
-#include <altera_avalon_pio_regs.h>
-#include "taskMacros.h"
 #include <stdio.h>
+#include "taskMacros.h"
 #include "vars.h"
 
 #ifdef __SIMULATION__
@@ -66,15 +64,16 @@ void vWallSwitchFrequencyTask(void *pvParameters)
             intToArray(switchVal, rawSwitchValue, NUM_SWITCHES);
             xSemaphoreGive(xSwitchMutex);
         }
-        else vTaskDelay(100);
+        else
+            vTaskDelay(100);
         
         int i;
-        for(i = 0; i < NUM_SWITCHES; i++)
+        for (i = 0; i < NUM_SWITCHES; i++)
         {
             printf("Switch %d: %u ", i, switchVal[i]);
         }
         printf("\r\n");
 
-        vTaskDelay(100);
+        vTaskDelay(200);
     }
 }

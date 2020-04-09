@@ -1,6 +1,8 @@
 #ifndef MOCKIO_H
 #define MOCKIO_H
 
+#define IORD_ALTERA_AVALON_PIO_DATA(base) IORD(base, 0)
+
 typedef unsigned long alt_u32;
 
 unsigned int IORD(int base, int regnum);

@@ -8,4 +8,6 @@
 #define PS2_BASE 0x430e0
 #define PS2_IRQ 2
 
+#define SLIDE_SWITCH_BASE 0x430b0
+
 #endif /* MOCKSYSTEM_H */

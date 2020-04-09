@@ -17,6 +17,10 @@ unsigned int IORD(int base, int regnum)
 		frequency_data_index = frequency_data_index % NUMBER_OF_DUMMY_FREQUENCY_DATA_SAMPLES;
 		return newReadingToReturn;
 	}
+	else if (base == SLIDE_SWITCH_BASE)
+	{
+		// TODO: implament mock switches.
+	}
 
 	return 0;
 }

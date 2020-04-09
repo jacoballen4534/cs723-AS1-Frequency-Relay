@@ -29,6 +29,13 @@ void mockFrequencyAnalyser(void *pvParameters)
 	while (1)
 	{
 		vTaskDelay(MOCK_FREQUENCY_ANALYSER_DELAY);
-		(*freq_analyser_isr_handler)(0, 0);
+		if (freq_analyser_isr_handler)
+		{
+			(*freq_analyser_isr_handler)(0, 0);
+		}
+		else
+		{
+			printf("New freq event. No freq_analyser_isr_handler defined\n");
+		}
 	}
 }

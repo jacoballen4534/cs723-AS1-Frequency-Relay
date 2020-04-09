@@ -1,8 +1,6 @@
-#include <system.h>
-#include <altera_avalon_pio_regs.h>
-#include "taskMacros.h"
 #include <stdio.h>
 #include "vars.h"
+#include "taskMacros.h"
 
 #ifdef __SIMULATION__
 #include "mockIO.h"
@@ -23,7 +21,6 @@
 #include "freertos/semphr.h"
 #endif
 
-
 //This combines the load shedder output and the wall switch output
 //in a "logical AND" fashion, and updates the relevant output LEDs
 //Controls load status LEDs, as well as load shedder LEDs
@@ -35,8 +32,8 @@ extern SemaphoreHandle_t xSwitchMutex;
 /////////////////////////////////////////
 
 void vLoadControlTask(void *pvParameters)
-{   
-    while(1)
+{
+    while (1)
     {
     }
 }

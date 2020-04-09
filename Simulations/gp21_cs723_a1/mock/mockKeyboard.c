@@ -71,8 +71,16 @@ void mockKeyboardInput(void *pvParameters)
 		{
 			// Put key in keyboard_device structure.
 			keyboard_device->pressedKeyAsciiValue = _getch();
+
 			// trigger keyboard isr.
-			(*keyboard_isr_handler)(keyboard_context, 0);
+			if (keyboard_isr_handler)
+			{
+				(*keyboard_isr_handler)(keyboard_context, 0);
+			}
+			else
+			{
+				printf("New keyboard event. No keyboard_isr_handler defined\n");
+			}
 		}
 	}
 }
