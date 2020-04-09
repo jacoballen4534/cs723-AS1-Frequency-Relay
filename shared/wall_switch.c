@@ -25,12 +25,14 @@
 //communicates status of all switches to load control task via shared memory (not necessary to mutex?)
 
 // GLOBALS
-uint8_t switchVal[NUM_SWITCHES] = {0};
+uint8_t switchVal[NUM_LOADS] = {0};
 SemaphoreHandle_t xSwitchMutex = NULL;
+extern TaskHandle_t loadControlHandle;
 /////////////////////////////////////////
 
 void vWallSwitchFrequencyTask(void *pvParameters);
 void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
+void intToArray(uint8_t * buf, uint32_t input, uint32_t array_length);
 
 int initWallSwitches(void)
 {
@@ -39,6 +41,7 @@ int initWallSwitches(void)
     handleTaskCreateError(taskStatus, "vWallSwitchFrequencyTask");
 
     xSwitchMutex = xSemaphoreCreateMutex();
+    intToArray(switchVal, IORD_ALTERA_AVALON_PIO_DATA(SLIDE_SWITCH_BASE), NUM_LOADS);
     return 0;
 }
 
@@ -61,19 +64,19 @@ void vWallSwitchFrequencyTask(void *pvParameters)
         //FIXME: Mutex guard
         if(xSemaphoreTake( xSwitchMutex, ( TickType_t ) 10 ) == pdTRUE )
         {
-            intToArray(switchVal, rawSwitchValue, NUM_SWITCHES);
+            intToArray(switchVal, rawSwitchValue, NUM_LOADS);
             xSemaphoreGive(xSwitchMutex);
         }
         else
-            vTaskDelay(100);
+            vTaskDelay(200);
         
         int i;
-        for (i = 0; i < NUM_SWITCHES; i++)
+        for (i = 0; i < NUM_LOADS; i++)
         {
-            printf("Switch %d: %u ", i, switchVal[i]);
+            printf("Switch %d: %u, ", i, switchVal[i]);
         }
         printf("\r\n");
-
+        xTaskNotify(loadControlHandle, 1, eSetValueWithOverwrite);
         vTaskDelay(200);
     }
 }
