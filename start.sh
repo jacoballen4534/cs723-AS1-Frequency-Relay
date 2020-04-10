@@ -21,7 +21,7 @@ elif [ $1 ] && [ $1 == "nios" ]; then
     elif [ -z $2 ] || ([ $2 ] &&  [ $2 == "all" ]); then
         echo "Running Nios II shell start script"
         ./nios2_command_shell.sh bash -c "cd $PROJECT_PATH/Nios/software/gp21_cs723_a1; make"
-        echo "cd $PROJECT_PATH/App; nios2-terminal | python display_app.py & nios2-download -g ../Nios/software/gp21_cs723_a1/gp21_cs723_a1.elf" | ./'Nios II Command Shell.bat'
+        echo "cd $PROJECT_PATH/App; nios2-terminal | py display_app.py & nios2-download -g ../Nios/software/gp21_cs723_a1/gp21_cs723_a1.elf" | ./'Nios II Command Shell.bat'
     fi
 fi
     
