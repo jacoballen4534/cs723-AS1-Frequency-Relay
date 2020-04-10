@@ -27,7 +27,7 @@
 // GLOBALS
 uint8_t switchVal[NUM_LOADS] = {0};
 SemaphoreHandle_t xSwitchMutex = NULL;
-extern TaskHandle_t loadControlHandle;
+#define WALL_SWITCH_TASK_TIMEOUT 20
 /////////////////////////////////////////
 
 void vWallSwitchFrequencyTask(void *pvParameters);
@@ -41,7 +41,10 @@ int initWallSwitches(void)
     handleTaskCreateError(taskStatus, "vWallSwitchFrequencyTask");
 
     xSwitchMutex = xSemaphoreCreateMutex();
+
+    xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
     intToArray(switchVal, IORD_ALTERA_AVALON_PIO_DATA(SLIDE_SWITCH_BASE), NUM_LOADS);
+    xSemaphoreGive(xSwitchMutex);
     return 0;
 }
 
@@ -49,7 +52,7 @@ void intToArray(uint8_t * buf, uint32_t input, uint32_t array_length)
 {
     uint32_t mask = 0x0001;
     int i;
-    for(i = 0 ; i < array_length; i++)
+    for (i = 0; i < array_length; i++)
     {
         buf[i] = (input & mask);
         input = input >> 1;
@@ -58,17 +61,19 @@ void intToArray(uint8_t * buf, uint32_t input, uint32_t array_length)
 
 void vWallSwitchFrequencyTask(void *pvParameters)
 {   
-    while(1)
+    const uint32_t notificationValue = WALL_SWITCH_NOTIFICATION;
+    uint32_t previousRawSwitchValue = 0;
+    while (1)
     {
         uint32_t rawSwitchValue = IORD_ALTERA_AVALON_PIO_DATA(SLIDE_SWITCH_BASE);
-        //FIXME: Mutex guard
-        if(xSemaphoreTake( xSwitchMutex, ( TickType_t ) 10 ) == pdTRUE )
+
+        if (rawSwitchValue != previousRawSwitchValue)
         {
+            xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
             intToArray(switchVal, rawSwitchValue, NUM_LOADS);
             xSemaphoreGive(xSwitchMutex);
-        }
-        else
-            vTaskDelay(200);
+
+            previousRawSwitchValue = rawSwitchValue;
         
         int i;
         for (i = 0; i < NUM_LOADS; i++)
@@ -76,7 +81,14 @@ void vWallSwitchFrequencyTask(void *pvParameters)
             printf("Switch %d: %u, ", i, switchVal[i]);
         }
         printf("\r\n");
-        xTaskNotify(loadControlHandle, 1, eSetValueWithOverwrite);
-        vTaskDelay(200);
+
+            BaseType_t result = xQueueSend(loadControllNotifyQ, (void *)&notificationValue, WALL_SWITCH_TASK_TIMEOUT);
+            if (result == errQUEUE_FULL)
+            {
+                printf("wall switch update fail as loadControllNotifyQ is full\n");
+                continue; // Skip the vTaskDelay as it has allready waited WALL_SWITCH_TASK_TIMEOUT
+            }
+        }
+        vTaskDelay(WALL_SWITCH_TASK_TIMEOUT);
     }
 }

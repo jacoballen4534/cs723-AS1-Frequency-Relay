@@ -33,7 +33,7 @@ int main(int argc, char *argv[], char *envp[])
 #endif
 
 	// Initialise all tasks
-	//initFrequencyAnalyser();
+	initFrequencyAnalyser();
 	initUserInput();
 	initWallSwitches();
 	initLoadControl();
@@ -46,11 +46,18 @@ int main(int argc, char *argv[], char *envp[])
 void initSharedVars(void)
 {
 	// Creating a queue to buffer frequency readings.
-	newFreqQ = xQueueCreate(20, sizeof(unsigned int));
+	newFreqQ = xQueueCreate(NEW_FREQ_Q_LENGTH, sizeof(unsigned int));
 
 	if (newFreqQ == 0)
 	{
-		fputs("Could not create a queue", stderr);
+		fputs("Could not create newFreqQ queue", stderr);
+		exit(1);
+	}
+
+	loadControllNotifyQ = xQueueCreate(LOAD_CONTROLL_NOTIFY_Q_LENGTH, sizeof(unsigned int));
+	if (loadControllNotifyQ == 0)
+	{
+		fputs("Could not create loadControllNotifyQ queue", stderr);
 		exit(1);
 	}
 }
