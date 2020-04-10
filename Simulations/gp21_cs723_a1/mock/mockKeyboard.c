@@ -74,7 +74,7 @@ void mockKeyboardInput(void *pvParameters)
 
 	while (1)
 	{
-		vTaskDelay(MOCK_KEYBOARD_POLL_DELAY);
+		vTaskDelay(MOCK_KEYBOARD_POLL_DELAY / portTICK_PERIOD_MS);
 
 		// Has a key been pressed?
 		if (_kbhit() != 0)
@@ -89,6 +89,10 @@ void mockKeyboardInput(void *pvParameters)
 			else if (keyboardInput == BUTTON_3_KEY || keyboardInput == BUTTON_2_KEY || keyboardInput == BUTTON_1_KEY || keyboardInput == BUTTON_0_KEY)
 			{
 				pushButtonHandler(keyboardInput);
+			}
+			else if (keyboardInput == 'q')
+			{
+				exit(0);
 			}
 			else
 			{
