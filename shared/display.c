@@ -44,19 +44,19 @@ void vDisplayOutputTask(void *pvParameters)
         }
 
         //output to UART
-        printf("SNAPSHOT:");
+        printf("SNAPSHOT:\r\n");
         int i;
         for(i = 0; i < DISPLAY_BUFFER_LENGTH; i++)
         {
             int j = (insertIndex - i);
-            if(j < 0) j = DISPLAY_BUFFER_LENGTH + j;
+            if (j < 0)
+                j = DISPLAY_BUFFER_LENGTH + j;
 
-            printf("%lf,", displayBuffer[j].freq);
+            printf("Reading,%lf,", displayBuffer[j].freq);
             printf("%lf,", displayBuffer[j].RoC);
             printf("%u\r\n", displayBuffer[j].timestamp);
         }
         printf("\r\n");
-
     }
 }
 

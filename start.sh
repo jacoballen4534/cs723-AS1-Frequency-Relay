@@ -6,6 +6,10 @@ if [ $1 ] && [ $1 == "simulator" ]; then
     if [ $2 ] && [ $2 == "clean" ]; then
         cd Simulations/gp21_cs723_a1/Build
         make clean
+    elif [ $2 ] && [ $2 == "app" ]; then
+        cd Simulations/gp21_cs723_a1/Build
+        make all
+        ./gp21_cs723_a1_simulator.exe | py ../../../App/display_app.py
     elif [ -z $2 ] || ([ $2 ] &&  [ $2 == "all" ]); then
         cd Simulations/gp21_cs723_a1/Build
         make all
