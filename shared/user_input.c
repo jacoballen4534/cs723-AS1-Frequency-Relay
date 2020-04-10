@@ -60,6 +60,7 @@
 
 // Local Function Prototypes
 void keyboard_isr(void *context, alt_u32 id);
+void button_isr(void *context, alt_u32 id);
 
 // This function initialises the process that captures keyboard inputs
 int initUserInput(void)
@@ -77,11 +78,22 @@ int initUserInput(void)
 #endif
 
 	alt_up_ps2_clear_fifo(keyboard_device);
-
 	// register the PS/2 interrupt
 	alt_irq_register(PS2_IRQ, keyboard_device, keyboard_isr);
 
 	IOWR_8DIRECT(PS2_BASE, 4, 1);
+
+	// Setup push button
+
+	// clears the edge capture register. Writing 1 to bit clears pending interrupt for corresponding button.
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSH_BUTTON_BASE, 0b0001);
+
+	// enable interrupts for all buttons
+	IOWR_ALTERA_AVALON_PIO_IRQ_MASK(PUSH_BUTTON_BASE, 0b0001);
+
+	// register the ISR
+	alt_irq_register(PUSH_BUTTON_IRQ, NULL, button_isr);
+
 	return 0;
 }
 
@@ -97,4 +109,13 @@ void keyboard_isr(void *context, alt_u32 id)
 		printf("New keyboard input %c\n", ascii);
 		fflush(stdout);
 	}
+}
+
+void button_isr(void *context, alt_u32 id)
+{
+
+	printf("Push button was pressed ISR\n");
+
+	// clears the edge capture register
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSH_BUTTON_BASE, 0b0001);
 }
