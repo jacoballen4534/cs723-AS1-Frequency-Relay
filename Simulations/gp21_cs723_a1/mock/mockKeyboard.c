@@ -67,13 +67,13 @@ void mockKeyboardInput(void *pvParameters)
 	{
 		vTaskDelay(MOCK_KEYBOARD_POLL_DELAY);
 
-		/* Has a key been pressed? */
+		// Has a key been pressed?
 		if (_kbhit() != 0)
 		{
 			//Since switches are simulated from function key input, we should check for function keys
 			int keyboardInput = _getch(); //NOTE: this is Windows specific, not sure what the better way would be
 
-			if(keyboardInput == 0 || keyboardInput == 224) //special keyboard input
+			if (keyboardInput == 0 || keyboardInput == 224) //special keyboard input that generate two key stokes
 			{
 				//we have to check _getch() again.
 				keyboardInput = _getch();

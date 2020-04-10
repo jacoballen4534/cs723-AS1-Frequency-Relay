@@ -29,14 +29,12 @@
 // GLOBALS
 extern uint8_t switchVal[NUM_LOADS];
 extern SemaphoreHandle_t xSwitchMutex;
-TaskHandle_t loadControlHandle = NULL;
 /////////////////////////////////////////
 uint8_t shedderStatus[NUM_LOADS] = {0};
 uint8_t loadStatus[NUM_LOADS] = {0}; //the final output of the device to the loads
 
 void vLoadControlTask(void *pvParameters);
 void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
-
 
 void updateLoadStatus()
 {
@@ -57,9 +55,8 @@ int initLoadControl()
         shedderStatus[i] = 1;
     }
     updateLoadStatus();
-    // Start vWallSwitchFrequencyTask task
-    BaseType_t taskStatus = xTaskCreate(vLoadControlTask, "vLoadControlTask", TASK_STACKSIZE, NULL, LOAD_CONTROL_TASK_PRIORITY, &loadControlHandle);
 
+    BaseType_t taskStatus = xTaskCreate(vLoadControlTask, "vLoadControlTask", TASK_STACKSIZE, NULL, LOAD_CONTROL_TASK_PRIORITY, NULL);
     handleTaskCreateError(taskStatus, "vLoadControlTask");
 
     return 0;
@@ -70,17 +67,26 @@ void vLoadControlTask(void *pvParameters)
     uint32_t notifySource = 0;
     while (1)
     {
-        //will awaken when signaled by UserInputTask or LoadShedderTask
-        xTaskNotifyWait(0x00, 0xffffffff, &notifySource, portMAX_DELAY);
-        if(notifySource == 1) //user input
+        //will awaken when signaled by UserInputTask, LoadShedderTask or wallSwitchTask change
+        BaseType_t queueReceiveStatus = xQueueReceive(loadControllNotifyQ, (void *)&notifySource, portMAX_DELAY);
+        if (queueReceiveStatus == pdFALSE)
+        {
+            // Something went wrong
+            continue;
+        }
+
+        if (notifySource == WALL_SWITCH_NOTIFICATION)
         {
             //read switch vals and update loads
+            xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
             updateLoadStatus();
+            xSemaphoreGive(xSwitchMutex);
         }
-        else if(notifySource == 2) //load shedder
+        else if (notifySource == USER_INPUT_NOTIFICATION)
         {
-        
         }
-        
+        else if (notifySource == LOAD_SHEDDER_NOTIFICATION)
+        {
+        }
     }
 }   
