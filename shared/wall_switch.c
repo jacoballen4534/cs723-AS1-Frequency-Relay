@@ -1,25 +1,7 @@
 #include <stdio.h>
 #include "taskMacros.h"
 #include "vars.h"
-
-#ifdef __SIMULATION__
-#include "mockIO.h"
-#include "mockSystem.h"
-// Scheduler includes
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#else
-#include "io.h"
-#include "system.h"
-#include "altera_avalon_pio_regs.h"
-// Scheduler includes
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "freertos/semphr.h"
-#endif
+#include "freertos_includes.h"
 
 //contains task which polls switches periodically to determine values
 //communicates status of all switches to load control task via shared memory (not necessary to mutex?)
@@ -82,13 +64,13 @@ void vWallSwitchFrequencyTask(void *pvParameters)
         }
         printf("\r\n");
 
-            BaseType_t result = xQueueSend(loadControllNotifyQ, (void *)&notificationValue, WALL_SWITCH_TASK_TIMEOUT);
+            BaseType_t result = xQueueSend(loadControlNotifyQ, (void *)&notificationValue, WALL_SWITCH_TASK_TIMEOUT);
             if (result == errQUEUE_FULL)
             {
                 printf("wall switch update fail as loadControllNotifyQ is full\n");
                 continue; // Skip the vTaskDelay as it has allready waited WALL_SWITCH_TASK_TIMEOUT
             }
         }
-        vTaskDelay(WALL_SWITCH_TASK_TIMEOUT);
+        vTaskDelay(WALL_SWITCH_TASK_TIMEOUT / portTICK_PERIOD_MS);
     }
 }

@@ -65,7 +65,7 @@ void mockKeyboardInput(void *pvParameters)
 
 	while (1)
 	{
-		vTaskDelay(MOCK_KEYBOARD_POLL_DELAY);
+		vTaskDelay(MOCK_KEYBOARD_POLL_DELAY / portTICK_PERIOD_MS);
 
 		// Has a key been pressed?
 		if (_kbhit() != 0)
@@ -83,6 +83,10 @@ void mockKeyboardInput(void *pvParameters)
 					//flip the bit associated with that key position
 					switchValue = switchValue ^ (1U << switchIndex);
 				}
+			}
+			else if (keyboardInput == 'q')
+			{
+				exit(0);
 			}
 			else
 			{

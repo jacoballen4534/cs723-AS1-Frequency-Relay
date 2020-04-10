@@ -20,6 +20,8 @@ int initFrequencyAnalyser(void);
 int initUserInput(void);
 int initWallSwitches(void);
 int initLoadControl(void);
+int initDisplay(void);
+
 
 // declare local functions
 void initSharedVars(void);
@@ -37,6 +39,8 @@ int main(int argc, char *argv[], char *envp[])
 	initUserInput();
 	initWallSwitches();
 	initLoadControl();
+	initDisplay();
+
 
 	// Starting the scheduler
 	vTaskStartScheduler();
@@ -46,7 +50,7 @@ int main(int argc, char *argv[], char *envp[])
 void initSharedVars(void)
 {
 	// Creating a queue to buffer frequency readings.
-	newFreqQ = xQueueCreate(NEW_FREQ_Q_LENGTH, sizeof(unsigned int));
+	newFreqQ = xQueueCreate(NEW_FREQ_Q_LENGTH, sizeof(AnalyserReading));
 
 	if (newFreqQ == 0)
 	{
@@ -54,10 +58,17 @@ void initSharedVars(void)
 		exit(1);
 	}
 
-	loadControllNotifyQ = xQueueCreate(LOAD_CONTROLL_NOTIFY_Q_LENGTH, sizeof(unsigned int));
-	if (loadControllNotifyQ == 0)
+	loadControlNotifyQ = xQueueCreate(LOAD_CONTROL_NOTIFY_Q_LENGTH, sizeof(unsigned int));
+	if (loadControlNotifyQ == 0)
 	{
-		fputs("Could not create loadControllNotifyQ queue", stderr);
+		fputs("Could not create loadControlNotifyQ queue", stderr);
+		exit(1);
+	}
+
+	freqDisplayQ = xQueueCreate(LOAD_CONTROL_NOTIFY_Q_LENGTH, sizeof(FreqReading));
+	if (freqDisplayQ == 0)
+	{
+		fputs("Could not create freqDisplayQ queue", stderr);
 		exit(1);
 	}
 }

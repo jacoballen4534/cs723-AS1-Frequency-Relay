@@ -1,25 +1,7 @@
 #include <stdio.h>
 #include "vars.h"
 #include "taskMacros.h"
-
-#ifdef __SIMULATION__
-#include "mockIO.h"
-#include "mockSystem.h"
-// Scheduler includes
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "semphr.h"
-#else
-#include "io.h"
-#include "system.h"
-#include "altera_avalon_pio_regs.h"
-// Scheduler includes
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "freertos/semphr.h"
-#endif
+#include "freertos_includes.h"
 
 //This combines the load shedder output and the wall switch output
 //in a "logical AND" fashion, and updates the relevant output LEDs
@@ -68,7 +50,7 @@ void vLoadControlTask(void *pvParameters)
     while (1)
     {
         //will awaken when signaled by UserInputTask, LoadShedderTask or wallSwitchTask change
-        BaseType_t queueReceiveStatus = xQueueReceive(loadControllNotifyQ, (void *)&notifySource, portMAX_DELAY);
+        BaseType_t queueReceiveStatus = xQueueReceive(loadControlNotifyQ, (void *)&notifySource, portMAX_DELAY);
         if (queueReceiveStatus == pdFALSE)
         {
             // Something went wrong

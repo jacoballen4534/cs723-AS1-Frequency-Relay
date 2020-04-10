@@ -7,28 +7,9 @@
 #include <stdio.h>
 #include "taskMacros.h"
 #include "vars.h"
-
-#ifdef __SIMULATION__
-#include "mockIO.h"
-#include "mockSystem.h"
-// Scheduler includes
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#else
-#include "io.h"
-#include "system.h"
-#include "altera_avalon_pio_regs.h"
-// Scheduler includes
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#endif
+#include "freertos_includes.h"
 
 #define SAMPLING_FREQUENCY 16000.0
-
-// Forward Declarations of task helper
-void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
 
 // Local Function Prototypes
 void processFrequency(void *pvParameters);
@@ -51,7 +32,7 @@ void processFrequency(void *pvParameters)
 {
 	double latestFrequencySample = 0;
 	double previousFrequencySample = 0;
-	unsigned int ADCSamples = 0;
+	AnalyserReading ADCSamples;
 	double roc = 0;
 
 	while (1)
@@ -60,7 +41,7 @@ void processFrequency(void *pvParameters)
 		BaseType_t queueReceiveStatus = xQueueReceive(newFreqQ, (void *)&ADCSamples, portMAX_DELAY);
 		if (queueReceiveStatus > 0)
 		{
-			latestFrequencySample = SAMPLING_FREQUENCY / (double)ADCSamples;
+			latestFrequencySample = SAMPLING_FREQUENCY / (double)ADCSamples.count;
 		}
 		else
 		{
@@ -68,13 +49,19 @@ void processFrequency(void *pvParameters)
 			latestFrequencySample = 0;
 		}
 
-		printf("%f Hz\n", latestFrequencySample);
+		
 
 		//calculate RoC
 		roc = (latestFrequencySample - previousFrequencySample) * 2.0 * latestFrequencySample * previousFrequencySample / (latestFrequencySample + previousFrequencySample);
 		previousFrequencySample = latestFrequencySample;
 
-		printf("RoC %f\n\n", roc);
+		FreqReading fr = {latestFrequencySample, roc, ADCSamples.timestamp};
+		BaseType_t queueSendStatus = xQueueSend(freqDisplayQ, (void *)&fr, portMAX_DELAY);
+
+		//printf("%f Hz, ", fr.freq);
+
+		//printf("RoC %f, ", fr.RoC);
+		//printf("Tick count: %u\r\n", fr.timestamp);
 		fflush(stdout);
 	}
 }
@@ -82,7 +69,9 @@ void processFrequency(void *pvParameters)
 void freq_isr()
 {
 	unsigned int newReading = IORD(FREQUENCY_ANALYSER_BASE, 0);
-	BaseType_t queueSendStatus = xQueueSendFromISR(newFreqQ, (void *)&newReading, NULL);
+	TickType_t timestamp = xTaskGetTickCountFromISR();
+	AnalyserReading ar = {newReading, timestamp};
+	BaseType_t queueSendStatus = xQueueSendFromISR(newFreqQ, (void *)&ar, NULL);
 
 	if (queueSendStatus == pdTRUE)
 	{

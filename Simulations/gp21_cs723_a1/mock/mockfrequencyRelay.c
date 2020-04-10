@@ -28,7 +28,7 @@ void mockFrequencyAnalyser(void *pvParameters)
 {
 	while (1)
 	{
-		vTaskDelay(MOCK_FREQUENCY_ANALYSER_DELAY);
+		vTaskDelay(MOCK_FREQUENCY_ANALYSER_DELAY / portTICK_PERIOD_MS);
 		if (freq_analyser_isr_handler)
 		{
 			(*freq_analyser_isr_handler)(0, 0);
