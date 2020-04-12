@@ -35,28 +35,20 @@ void vDisplayOutputTask(void *pvParameters)
 {
     while(1)
     {
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
         FreqReading fr;
+        insertIndex = 0;
         while(xQueueReceive(freqDisplayQ, (void *)&fr, (TickType_t) 0))
         {
-            insertIndex = (insertIndex + 1) % DISPLAY_BUFFER_LENGTH;
-            displayBuffer[insertIndex] = fr;
-        }
+            displayBuffer[insertIndex++] = fr;
+        }  
 
         //output to UART
-        printf("SNAPSHOT:\r\n");
         int i;
-        for(i = 0; i < DISPLAY_BUFFER_LENGTH; i++)
+        for(i = 0; i < insertIndex; i++)
         {
-            int j = (insertIndex - i);
-            if (j < 0)
-                j = DISPLAY_BUFFER_LENGTH + j;
-
-            printf("Reading,%lf,", displayBuffer[j].freq);
-            printf("%lf,", displayBuffer[j].RoC);
-            printf("%u\r\n", displayBuffer[j].timestamp);
+            printf("_fr,%lf,%lf,%u\n", displayBuffer[i].freq, displayBuffer[i].RoC,displayBuffer[i].timestamp);
         }
-        printf("\r\n");
     }
 }
 

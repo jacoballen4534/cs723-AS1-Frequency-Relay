@@ -71,6 +71,7 @@ void freq_isr()
 	unsigned int newReading = IORD(FREQUENCY_ANALYSER_BASE, 0);
 	TickType_t timestamp = xTaskGetTickCountFromISR();
 	AnalyserReading ar = {newReading, timestamp};
+	
 	BaseType_t queueSendStatus = xQueueSendFromISR(newFreqQ, (void *)&ar, NULL);
 
 	if (queueSendStatus == pdTRUE)
