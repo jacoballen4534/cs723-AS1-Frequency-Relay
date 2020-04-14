@@ -65,10 +65,17 @@ void initSharedVars(void)
 		exit(1);
 	}
 
-	freqDisplayQ = xQueueCreate(LOAD_CONTROL_NOTIFY_Q_LENGTH, sizeof(FreqReading));
+	freqDisplayQ = xQueueCreate(FREQ_DISPLAY_Q_LENGTH, sizeof(FreqReading));
 	if (freqDisplayQ == 0)
 	{
 		fputs("Could not create freqDisplayQ queue", stderr);
+		exit(1);
+	}
+
+	freqDataQ = xQueueCreate(FREQ_DATA_Q_LENGTH, sizeof(FreqReading));
+	if (freqDataQ == 0)
+	{
+		fputs("Could not create freqDataQ queue", stderr);
 		exit(1);
 	}
 }

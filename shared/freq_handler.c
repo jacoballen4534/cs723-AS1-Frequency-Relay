@@ -56,7 +56,8 @@ void processFrequency(void *pvParameters)
 		previousFrequencySample = latestFrequencySample;
 
 		FreqReading fr = {latestFrequencySample, roc, ADCSamples.timestamp};
-		BaseType_t queueSendStatus = xQueueSend(freqDisplayQ, (void *)&fr, portMAX_DELAY);
+		xQueueSend(freqDisplayQ, (void *)&fr, portMAX_DELAY);
+		xQueueSend(freqDataQ, (void *)&fr, 0); //FIXME
 
 		//printf("%f Hz, ", fr.freq);
 

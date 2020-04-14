@@ -9,6 +9,8 @@
 #include "freertos/queue.h"
 #endif
 
+typedef enum { false, true } bool;
+
 #define NUM_LOADS 10
 
 #define NEW_FREQ_Q_LENGTH 20
@@ -19,6 +21,12 @@ QueueHandle_t loadControlNotifyQ;
 
 #define FREQ_DISPLAY_Q_LENGTH 30
 QueueHandle_t freqDisplayQ;
+
+#define FREQ_DATA_Q_LENGTH 30
+QueueHandle_t freqDataQ;	
+
+#define SHED_RECONNECT_Q_LENGTH 30
+QueueHandle_t shedReconnectQ;
 
 #define WALL_SWITCH_NOTIFICATION 1
 #define USER_INPUT_NOTIFICATION 2
