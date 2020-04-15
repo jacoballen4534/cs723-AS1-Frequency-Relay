@@ -22,7 +22,7 @@ alt_alarm shedTimer;
 void vLoadShedderTask(void *pvParameters);
 
 bool timerOverflow = false; //FIXME: mutex guard
-uint32_t timerShedISR()
+alt_u32 timerShedISR(void *context)
 {
     timerOverflow = true;
     return SHED_TIME_MS;
@@ -31,8 +31,12 @@ uint32_t timerShedISR()
 
 int initLoadShedder(void)
 {
+#ifdef __SIMULATION__
+    initMockTimer(&shedTimer); // If there are multiple timers, each one will need to be initialised individually.
+#endif
+
     // Start vDisplayOutputTask task
-    BaseType_t taskStatus = xTaskCreate(vLoadShedderTask, "vLoadShedderTask", TASK_STACKSIZE, NULL, DISPLAY_TASK_PRIORITY, NULL);
+    BaseType_t taskStatus = xTaskCreate(vLoadShedderTask, "vLoadShedderTask", TASK_STACKSIZE, NULL, LOAD_SHEADDER_PRIORITY, NULL);
     handleTaskCreateError(taskStatus, "vLoadShedderTask");
 
     return 0;
@@ -92,7 +96,8 @@ void vLoadShedderTask(void *pvParameters)
     while(1)
     {
         FreqReading fr;
-        xQueueReceive(freqDataQ, (void *)&fr, (TickType_t) 0);
+        //TODO: Decide if this is portMAX_DELAY and assume that samples come in fast enough to handel timer or 0 delay and check if a new value was received.
+        xQueueReceive(freqDataQ, (void *)&fr, portMAX_DELAY);
         loadShedTick(fr, &state);
     }
 }
