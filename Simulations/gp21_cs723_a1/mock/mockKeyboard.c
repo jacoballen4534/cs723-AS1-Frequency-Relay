@@ -1,5 +1,6 @@
 #include "mockKeyboard.h"
 #include "mockSwitches.h"
+#include "mockButtons.h"
 #include "mockSystem.h"
 #include "mockIsrHandlers.h"
 
@@ -16,6 +17,14 @@ void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
 
 // Forward declare local function
 void mockKeyboardInput(void *pvParameters);
+
+// Keys z,x,c,v represent buttons 3,2,1,0 respectively. (Button 3 (left) resets the board)
+#define BUTTON_0_KEY 118
+#define BUTTON_1_KEY 99
+#define BUTTON_2_KEY 120
+#define BUTTON_3_KEY 122
+
+#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 
 // Conversion tables for scan codes.
 #define SCAN_CODE_NUM 102
@@ -75,14 +84,11 @@ void mockKeyboardInput(void *pvParameters)
 
 			if (keyboardInput == 0 || keyboardInput == 224) //special keyboard input that generate two key stokes
 			{
-				//we have to check _getch() again.
-				keyboardInput = _getch();
-				if (keyboardInput >= 59 && keyboardInput <= 68) //F1-F10
-				{
-					int switchIndex = keyboardInput - 59;
-					//flip the bit associated with that key position
-					switchValue = switchValue ^ (1U << switchIndex);
-				}
+				wallSwitchHandler();
+			}
+			else if (keyboardInput == BUTTON_3_KEY || keyboardInput == BUTTON_2_KEY || keyboardInput == BUTTON_1_KEY || keyboardInput == BUTTON_0_KEY)
+			{
+				pushButtonHandler(keyboardInput);
 			}
 			else if (keyboardInput == 'q')
 			{
@@ -104,6 +110,45 @@ void mockKeyboardInput(void *pvParameters)
 				}
 			}
 		}
+	}
+}
+
+void wallSwitchHandler()
+{
+	//we have to check _getch() again.
+	int keyboardInput = _getch();
+	if (keyboardInput >= 59 && keyboardInput <= 68) //F1-F10
+	{
+		int switchIndex = keyboardInput - 59;
+		//flip the bit associated with that key position
+		switchValue = switchValue ^ (1U << switchIndex);
+	}
+}
+
+void pushButtonHandler(int button)
+{
+	// Check that interrupts are enabled and there is not interrupt allready raised to the corresponding button.
+	if (button == BUTTON_0_KEY && CHECK_BIT(buttonInterruptEnableMask, 0) && CHECK_BIT(buttonInterruptPendingMask, 0))
+	{
+		buttonInterruptPendingMask &= 0b1110;
+		(*button_isr_handler)(button_context, 0);
+		return;
+	}
+	else if (button == BUTTON_1_KEY && CHECK_BIT(buttonInterruptEnableMask, 1) && CHECK_BIT(buttonInterruptPendingMask, 1))
+	{
+		buttonInterruptPendingMask &= 0b1101;
+		(*button_isr_handler)(button_context, 0);
+		return;
+	}
+	else if (button == BUTTON_2_KEY && CHECK_BIT(buttonInterruptEnableMask, 2) && CHECK_BIT(buttonInterruptPendingMask, 2))
+	{
+		buttonInterruptPendingMask &= 0b1011;
+		(*button_isr_handler)(button_context, 0);
+		return;
+	}
+	else if (button == BUTTON_3_KEY && CHECK_BIT(buttonInterruptEnableMask, 3) && CHECK_BIT(buttonInterruptPendingMask, 3))
+	{
+		printf("RESTART SYSTEM\n"); //TODO: implament
 	}
 }
 

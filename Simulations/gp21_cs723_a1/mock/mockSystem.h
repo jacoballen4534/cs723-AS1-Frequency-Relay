@@ -10,4 +10,7 @@
 
 #define SLIDE_SWITCH_BASE 0x430b0
 
+#define PUSH_BUTTON_BASE 0x430c0
+#define PUSH_BUTTON_IRQ 1
+
 #endif /* MOCKSYSTEM_H */
