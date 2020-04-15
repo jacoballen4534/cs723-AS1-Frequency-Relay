@@ -21,7 +21,7 @@ int initMockTimer(alt_alarm *alarm)
 
 void timerCallback(TimerHandle_t xTimer)
 {
-    int timerID = pvTimerGetTimerID(xTimer);
+    int timerID = (int)pvTimerGetTimerID(xTimer);
     printf("Freertos timer callback triggered by timer  %d.\n", timerID);
 
     if (timerID >= NUMBER_OF_TIMERS)
