@@ -3,6 +3,7 @@
 
 #ifdef __SIMULATION__
 #include "mockIO.h"
+#include "mockTimer.h"
 #include "mockSystem.h"
 // Scheduler includes
 #include "FreeRTOS.h"

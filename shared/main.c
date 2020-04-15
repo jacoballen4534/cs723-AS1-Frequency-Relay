@@ -21,7 +21,7 @@ int initUserInput(void);
 int initWallSwitches(void);
 int initLoadControl(void);
 int initDisplay(void);
-
+int initLoadShedder(void);
 
 // declare local functions
 void initSharedVars(void);
@@ -40,7 +40,7 @@ int main(int argc, char *argv[], char *envp[])
 	initWallSwitches();
 	initLoadControl();
 	initDisplay();
-
+	initLoadShedder();
 
 	// Starting the scheduler
 	vTaskStartScheduler();
@@ -76,6 +76,13 @@ void initSharedVars(void)
 	if (freqDataQ == 0)
 	{
 		fputs("Could not create freqDataQ queue", stderr);
+		exit(1);
+	}
+
+	shedReconnectQ = xQueueCreate(SHED_RECONNECT_Q_LENGTH, sizeof(int));
+	if (shedReconnectQ == 0)
+	{
+		fputs("Could not create shedReconnectQ queue", stderr);
 		exit(1);
 	}
 }
