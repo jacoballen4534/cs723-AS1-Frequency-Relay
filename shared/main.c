@@ -21,7 +21,7 @@ int initUserInput(void);
 int initWallSwitches(void);
 int initLoadControl(void);
 int initDisplay(void);
-
+int initLoadShedder(void);
 
 // declare local functions
 void initSharedVars(void);
@@ -40,7 +40,7 @@ int main(int argc, char *argv[], char *envp[])
 	initWallSwitches();
 	initLoadControl();
 	initDisplay();
-
+	initLoadShedder();
 
 	// Starting the scheduler
 	vTaskStartScheduler();
