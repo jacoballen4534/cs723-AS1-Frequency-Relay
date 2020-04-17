@@ -58,7 +58,6 @@ void vWallSwitchFrequencyTask(void *pvParameters)
             previousRawSwitchValue = rawSwitchValue;
         
             // int i;
-            // printf("_sw,");
             // for (i = 0; i < NUM_LOADS; i++)
             // {
             //     printf("%u,", switchVal[i]);
