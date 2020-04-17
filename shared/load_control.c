@@ -24,7 +24,8 @@ void updateLoadStatus()
 {
     uint8_t i;
     uint8_t shedsRemaining = shedCount;
-    for(i = 0; i < NUM_LOADS; i++)
+    printf("_lo,");
+    for (i = 0; i < NUM_LOADS; i++)
     {
         loadStatus[i] = switchVal[i];
         if(loadStatus[i] == 0 && shedsRemaining > 0)
@@ -32,7 +33,7 @@ void updateLoadStatus()
             loadStatus[i] = 1;
             shedsRemaining--;
         }
-        printf("Load %d: %d, ", i, loadStatus[i]);
+        printf("%d,", loadStatus[i]);
     }
     printf("\r\n");
 }

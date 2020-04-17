@@ -67,8 +67,8 @@ void loadShedTick(FreqReading fr, enum State *state)
     case IDLE:
         if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))
         {
-            printf("SHED\n");
             (*state) = SHED;
+            printf("_fsm,%d\n", (*state));
             shedLoad(true);
             xTimerStart(shedTimer, TIMER_START_STOP_WAIT_TIME);
         }
@@ -82,7 +82,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         if ((fr.freq > freqThresh) && (fr.RoC < rocThresh))
         {
             (*state) = RECONNECT;
-            printf("RECONNECT\n");
+            printf("_fsm,%d\n", (*state));
             if (xTimerReset(shedTimer, TIMER_START_STOP_WAIT_TIME) != pdPASS)
             {
                 printf("Could not restart timer in SHED state.\n");
@@ -100,6 +100,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))
         {
             (*state) = SHED;
+            printf("_fsm,%d\n", (*state));
             if (xTimerReset(shedTimer, TIMER_START_STOP_WAIT_TIME) != pdPASS)
             {
                 printf("Could not restart timer in RECONNECT state.\n");
@@ -109,7 +110,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         if (allConnected)
         {
             (*state) = IDLE;
-            printf("IDLE\n");
+            printf("_fsm,%d\n", (*state));
             xTimerStop(shedTimer, TIMER_START_STOP_WAIT_TIME);
         }
         break;
