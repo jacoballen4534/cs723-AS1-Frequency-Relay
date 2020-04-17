@@ -52,6 +52,7 @@
 #include "altera_up_avalon_ps2.h"
 #include "altera_up_ps2_keyboard.h"
 #include "sys/alt_irq.h"
+#include "altera_avalon_pio_regs.h"
 // Scheduler includes
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -86,10 +87,10 @@ int initUserInput(void)
 	// Setup push button
 
 	// clears the edge capture register. Writing 1 to bit clears pending interrupt for corresponding button.
-	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSH_BUTTON_BASE, 0b0001);
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSH_BUTTON_BASE, 0x0001);
 
 	// enable interrupts for all buttons
-	IOWR_ALTERA_AVALON_PIO_IRQ_MASK(PUSH_BUTTON_BASE, 0b0001);
+	IOWR_ALTERA_AVALON_PIO_IRQ_MASK(PUSH_BUTTON_BASE, 0x0001);
 
 	// register the ISR
 	alt_irq_register(PUSH_BUTTON_IRQ, NULL, button_isr);
@@ -117,5 +118,5 @@ void button_isr(void *context, alt_u32 id)
 	printf("Push button was pressed ISR\n");
 
 	// clears the edge capture register
-	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSH_BUTTON_BASE, 0b0001);
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSH_BUTTON_BASE, 0x0001);
 }

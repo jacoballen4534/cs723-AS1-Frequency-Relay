@@ -77,7 +77,7 @@ void freq_isr()
 
 	if (queueSendStatus == pdTRUE)
 	{
-		printf("new number_of_adc_samples %u \n", newReading);
+		//printf("new number_of_adc_samples %u \n", newReading);
 	}
 	else
 	{

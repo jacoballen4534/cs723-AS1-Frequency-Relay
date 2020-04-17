@@ -42,13 +42,13 @@ def main():
     ReadInput().start()
 
     # define the form layout
-    layout = [[sg.Text('Animated Matplotlib', size=(40, 1),
+    layout = [[sg.Text('Frequency', size=(40, 1),
                 justification='center', font='Helvetica 20')],
               [sg.Canvas(size=(640, 480), key='-CANVAS-')],
               [sg.Button('Exit', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')]]
 
     # create the form and show it without the plot
-    window = sg.Window('Demo Application - Embedding Matplotlib In PySimpleGUI',
+    window = sg.Window('CS723 Visualiser',
                 layout, finalize=True)
 
     canvas_elem = window['-CANVAS-']
@@ -58,9 +58,9 @@ def main():
     # draw the initial plot in the window
     fig = Figure()
     ax = fig.add_subplot(111)
-    ax.set_xlabel("X axis")
-    ax.set_ylabel("Y axis")
-    ax.set_ylim([45.0, 55.0])
+    ax.set_xlabel("Time (ticks)")
+    ax.set_ylabel("Freq (Hz)")
+    ax.set_ylim([46.0, 52.0])
     ax.grid()
     fig_agg = draw_figure(canvas, fig)
 
@@ -71,7 +71,7 @@ def main():
         ax.cla()                    # clear the subplot
         ax.grid()                   # draw the grid
         ax.plot(range(NUM_POINTS), list(freq_q),  color='purple')
-        ax.set_ylim([45.0, 55.0])
+        ax.set_ylim([46.0, 52.0])
         fig_agg.draw()
 
     window.close()

@@ -3,12 +3,15 @@
 #include "taskMacros.h"
 #include "freertos_includes.h"
 
+const uint32_t notificationValue = LOAD_SHEDDER_NOTIFICATION;
+#define LOAD_SHEDDER_TASK_TIMEOUT 20
+
 enum State {IDLE = 0, SHED = 1, RECONNECT = 2}; 
 double freqThresh = 49.0;
 double rocThresh = 8.0;
 
-//extern bool isIdle;
-bool isIdle = false;
+//feedback from loadControl so we know when to enter 'idle'
+extern bool allConnected; //fixme: mutex guard
 
 alt_alarm shedTimer;
 #define SHED_TIME_MS 500
@@ -45,6 +48,11 @@ int initLoadShedder(void)
 void shedLoad(bool isShed)
 {
     xQueueSend(shedReconnectQ, (void *)&isShed, portMAX_DELAY);
+    BaseType_t result = xQueueSend(loadControlNotifyQ, (void *)&notificationValue, LOAD_SHEDDER_TASK_TIMEOUT);
+    if (result == errQUEUE_FULL)
+    {
+        printf("load shed update fail as loadControllNotifyQ is full\n");
+    }
 }
 
 void loadShedTick(FreqReading fr, enum State* state)
@@ -79,7 +87,15 @@ void loadShedTick(FreqReading fr, enum State* state)
                 timerOverflow = false;
                 shedLoad(false);
             }
-            if(isIdle)
+
+            if((fr.freq < freqThresh) || (fr.RoC > rocThresh))
+            {
+                (*state) = SHED;
+                alt_alarm_stop(&shedTimer);
+                alt_alarm_start(&shedTimer, SHED_TIME_MS, timerShedISR, NULL);
+            }
+
+            if(allConnected)
             {
                 (*state) = IDLE;
                 alt_alarm_stop(&shedTimer);
