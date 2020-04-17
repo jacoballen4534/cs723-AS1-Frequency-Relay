@@ -5,38 +5,43 @@
 
 const uint32_t notificationValue = LOAD_SHEDDER_NOTIFICATION;
 #define LOAD_SHEDDER_TASK_TIMEOUT 20
+#define TIMER_START_STOP_WAIT_TIME 10
 
-enum State {IDLE = 0, SHED = 1, RECONNECT = 2}; 
+enum State
+{
+    IDLE = 0,
+    SHED = 1,
+    RECONNECT = 2
+};
 double freqThresh = 49.0;
 double rocThresh = 8.0;
 
 //feedback from loadControl so we know when to enter 'idle'
 extern bool allConnected; //fixme: mutex guard
 
-alt_alarm shedTimer;
+TimerHandle_t shedTimer;
+
 #define SHED_TIME_MS 500
 
 //Condition 1: Freq below thresh
-//Condition 2: RoC above 
+//Condition 2: RoC above
 
 //When condition detected, move stable -> unstable, shed one load
-//after 500 ms 
+//after 500 ms
 
 void vLoadShedderTask(void *pvParameters);
 
 bool timerOverflow = false; //FIXME: mutex guard
-alt_u32 timerShedISR(void *context)
+
+void timerShedISR(TimerHandle_t xTimer)
 {
     timerOverflow = true;
-    return SHED_TIME_MS;
 }
-
 
 int initLoadShedder(void)
 {
-#ifdef __SIMULATION__
-    initMockTimer(&shedTimer); // If there are multiple timers, each one will need to be initialised individually.
-#endif
+
+    shedTimer = xTimerCreate("shedTimer", SHED_TIME_MS / portTICK_PERIOD_MS, pdTRUE, (void *)0, timerShedISR);
 
     // Start vDisplayOutputTask task
     BaseType_t taskStatus = xTaskCreate(vLoadShedderTask, "vLoadShedderTask", TASK_STACKSIZE, NULL, LOAD_SHEADDER_PRIORITY, NULL);
@@ -55,53 +60,60 @@ void shedLoad(bool isShed)
     }
 }
 
-void loadShedTick(FreqReading fr, enum State* state)
+void loadShedTick(FreqReading fr, enum State *state)
 {
-    switch(*state)
+    switch (*state)
     {
-        case IDLE:
-            if((fr.freq < freqThresh) || (fr.RoC > rocThresh))
-            {
-                (*state) = SHED;
-                shedLoad(true);
-                alt_alarm_start(&shedTimer, SHED_TIME_MS, timerShedISR, NULL);
-            }
+    case IDLE:
+        printf("IDLE\n");
+        if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))
+        {
+            (*state) = SHED;
+            shedLoad(true);
+            xTimerStart(shedTimer, TIMER_START_STOP_WAIT_TIME);
+        }
         break;
-        case SHED:
-            if(timerOverflow)
+    case SHED:
+        printf("SHED\n");
+        if (timerOverflow)
+        {
+            timerOverflow = false;
+            shedLoad(true);
+        }
+        if ((fr.freq > freqThresh) && (fr.RoC < rocThresh))
+        {
+            (*state) = RECONNECT;
+            if (xTimerReset(shedTimer, TIMER_START_STOP_WAIT_TIME) != pdPASS)
             {
-                timerOverflow = false;
-                shedLoad(true);
+                printf("Could not restart timer in SHED state.\n");
             }
-            if( (fr.freq > freqThresh) && (fr.RoC < rocThresh))
-            {
-                (*state) = RECONNECT;
-                alt_alarm_stop(&shedTimer);
-                alt_alarm_start(&shedTimer, SHED_TIME_MS, timerShedISR, NULL);
-            }
+        }
 
         break;
-        case RECONNECT:
-            if(timerOverflow)
-            {
-                timerOverflow = false;
-                shedLoad(false);
-            }
+    case RECONNECT:
+        printf("RECONNECT\n");
+        if (timerOverflow)
+        {
+            timerOverflow = false;
+            shedLoad(false);
+        }
 
-            if((fr.freq < freqThresh) || (fr.RoC > rocThresh))
+        if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))
+        {
+            (*state) = SHED;
+            if (xTimerReset(shedTimer, TIMER_START_STOP_WAIT_TIME) != pdPASS)
             {
-                (*state) = SHED;
-                alt_alarm_stop(&shedTimer);
-                alt_alarm_start(&shedTimer, SHED_TIME_MS, timerShedISR, NULL);
+                printf("Could not restart timer in RECONNECT state.\n");
             }
+        }
 
-            if(allConnected)
-            {
-                (*state) = IDLE;
-                alt_alarm_stop(&shedTimer);
-            }
+        if (allConnected)
+        {
+            (*state) = IDLE;
+            xTimerStop(shedTimer, TIMER_START_STOP_WAIT_TIME);
+        }
         break;
-        default:
+    default:
         break;
     }
 }
@@ -109,7 +121,7 @@ void loadShedTick(FreqReading fr, enum State* state)
 void vLoadShedderTask(void *pvParameters)
 {
     enum State state = IDLE;
-    while(1)
+    while (1)
     {
         FreqReading fr;
         //TODO: Decide if this is portMAX_DELAY and assume that samples come in fast enough to handel timer or 0 delay and check if a new value was received.

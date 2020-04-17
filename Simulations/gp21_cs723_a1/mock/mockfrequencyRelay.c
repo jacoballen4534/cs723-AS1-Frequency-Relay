@@ -7,7 +7,7 @@
 
 #include "mockIsrHandlers.h"
 
-#define MOCK_FREQUENCY_ANALYSER_DELAY 100
+#define MOCK_FREQUENCY_ANALYSER_DELAY 20
 
 // Forward Declarations of task helper
 void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
