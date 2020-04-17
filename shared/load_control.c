@@ -14,6 +14,7 @@ extern SemaphoreHandle_t xSwitchMutex;
 bool allConnected = false;
 /////////////////////////////////////////
 int8_t shedCount = 0;
+// TODO: Add mutex. Does this get its own mutex meaning updateLoadStatus will need to acquire two mutexes? or 1 mutex to cover loadStatus and xSwitchMutex
 uint8_t loadStatus[NUM_LOADS] = {0}; //the final output of the device to the loads
 //0 is ON (not shedded), 1 is OFF (shedded)
 
@@ -24,7 +25,7 @@ void updateLoadStatus()
 {
     uint8_t i;
     uint8_t shedsRemaining = shedCount;
-    printf("_lo,");
+    // printf("_lo,");
     for (i = 0; i < NUM_LOADS; i++)
     {
         loadStatus[i] = switchVal[i];
@@ -33,9 +34,9 @@ void updateLoadStatus()
             loadStatus[i] = 1;
             shedsRemaining--;
         }
-        printf("%d,", loadStatus[i]);
+        // printf("%d,", loadStatus[i]);
     }
-    printf("\r\n");
+    // printf("\r\n");
 }
 
 uint8_t getSwitchedOffCount() //FIXME: inefficient to recount switches constantly, keep track of when detecting switch presses

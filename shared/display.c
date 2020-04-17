@@ -3,6 +3,9 @@
 #include "taskMacros.h"
 #include "freertos_includes.h"
 
+extern uint8_t switchVal[NUM_LOADS];
+extern uint8_t loadStatus[NUM_LOADS];
+
 void vDisplayOutputTask(void *pvParameters);
 void initialiseBuffer();
 
@@ -42,6 +45,28 @@ void vDisplayOutputTask(void *pvParameters)
         {
             displayBuffer[insertIndex++] = fr;
         }  
+
+        {
+            //TODO: Use mutex
+            printf("_lo,");
+            uint8_t i;
+            for (i = 0; i < NUM_LOADS; i++)
+            {
+                printf("%d,", loadStatus[i]);
+            }
+            printf("\r\n");
+        }
+
+        {
+            //TODO: Use mutex
+            printf("_sw,");
+            uint8_t i;
+            for (i = 0; i < NUM_LOADS; i++)
+            {
+                printf("%u,", switchVal[i]);
+            }
+            printf("\r\n");
+        }
 
         //output to UART
         int i;

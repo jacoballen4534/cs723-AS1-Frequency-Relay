@@ -106,7 +106,7 @@ def main():
         # Update switches
         switchTextBox.update(f'Switches: {switchStatus}')
         # Update loads
-        loadTextBox.update(f'Loads: {loadStatus}')
+        loadTextBox.update(f'Loads:     {loadStatus}')
         # Update FSM
         FSMTextBox.update(f'FSM State: {FSMState}')
 

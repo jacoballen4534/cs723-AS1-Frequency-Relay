@@ -57,13 +57,13 @@ void vWallSwitchFrequencyTask(void *pvParameters)
 
             previousRawSwitchValue = rawSwitchValue;
         
-        int i;
-            printf("_sw,");
-        for (i = 0; i < NUM_LOADS; i++)
-        {
-                printf("%u,", switchVal[i]);
-        }
-        printf("\r\n");
+            // int i;
+            // printf("_sw,");
+            // for (i = 0; i < NUM_LOADS; i++)
+            // {
+            //     printf("%u,", switchVal[i]);
+            // }
+            // printf("\r\n");
 
             BaseType_t result = xQueueSend(loadControlNotifyQ, (void *)&notificationValue, WALL_SWITCH_TASK_TIMEOUT);
             if (result == errQUEUE_FULL)
