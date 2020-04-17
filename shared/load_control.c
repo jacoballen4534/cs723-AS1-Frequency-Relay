@@ -11,31 +11,45 @@
 // GLOBALS
 extern uint8_t switchVal[NUM_LOADS];
 extern SemaphoreHandle_t xSwitchMutex;
+bool allConnected = false;
 /////////////////////////////////////////
-uint8_t shedderStatus[NUM_LOADS] = {0};
+int8_t shedCount = 0;
 uint8_t loadStatus[NUM_LOADS] = {0}; //the final output of the device to the loads
+//0 is ON (not shedded), 1 is OFF (shedded)
 
 void vLoadControlTask(void *pvParameters);
 void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
 
 void updateLoadStatus()
 {
-    int i;
+    uint8_t i;
+    uint8_t shedsRemaining = shedCount;
     for(i = 0; i < NUM_LOADS; i++)
     {
-        loadStatus[i] = shedderStatus[i] & switchVal[i];
+        loadStatus[i] = switchVal[i];
+        if(loadStatus[i] == 0 && shedsRemaining > 0)
+        {
+            loadStatus[i] = 1;
+            shedsRemaining--;
+        }
         printf("Load %d: %d, ", i, loadStatus[i]);
     }
     printf("\r\n");
 }
 
+uint8_t getSwitchedOffCount() //FIXME: inefficient to recount switches constantly, keep track of when detecting switch presses
+{
+    uint8_t cnt = 0;
+    uint8_t i;
+    for(i = 0; i < NUM_LOADS; i++)
+        if(switchVal[i]) cnt++;
+
+    return cnt;
+}
+
 int initLoadControl()
 {
-    int i;
-    for(i = 0; i < NUM_LOADS; i++)
-    {
-        shedderStatus[i] = 1;
-    }
+    shedCount = 0;
     updateLoadStatus();
 
     BaseType_t taskStatus = xTaskCreate(vLoadControlTask, "vLoadControlTask", TASK_STACKSIZE, NULL, LOAD_CONTROL_TASK_PRIORITY, NULL);
@@ -64,10 +78,29 @@ void vLoadControlTask(void *pvParameters)
             updateLoadStatus();
             xSemaphoreGive(xSwitchMutex);
         }
-        else if (notifySource == USER_INPUT_NOTIFICATION)
-        {
-        }
         else if (notifySource == LOAD_SHEDDER_NOTIFICATION)
+        {
+            //receive queue values, then update loads
+            bool isShed;
+            uint8_t switchedOffCnt = getSwitchedOffCount();
+            while(xQueueReceive(shedReconnectQ, (void *)&isShed, 0))
+            {
+                if(isShed) shedCount++;
+                else shedCount--;
+                
+                if(shedCount <= 0) shedCount = 0;
+                else if (shedCount > (NUM_LOADS - switchedOffCnt)) shedCount = (NUM_LOADS - switchedOffCnt);
+
+                allConnected = (shedCount == 0) ? true : false; //FIXME: Mutex guard
+                printf("Shed count: %d\n", shedCount); //debug print
+            }
+
+            xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
+            updateLoadStatus();
+            xSemaphoreGive(xSwitchMutex);
+        }
+
+        else if (notifySource == USER_INPUT_NOTIFICATION)
         {
         }
     }

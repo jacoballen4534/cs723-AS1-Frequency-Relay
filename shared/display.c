@@ -47,7 +47,7 @@ void vDisplayOutputTask(void *pvParameters)
         int i;
         for(i = 0; i < insertIndex; i++)
         {
-            printf("_fr,%lf,%lf,%u\n", displayBuffer[i].freq, displayBuffer[i].RoC,displayBuffer[i].timestamp);
+            printf("_fr,%.3lf,%.3lf,%u\n", displayBuffer[i].freq, displayBuffer[i].RoC,displayBuffer[i].timestamp);
         }
     }
 }
