@@ -105,6 +105,7 @@ def main():
         ax.set_xlabel("Time (ticks)")
         ax.set_ylabel("Freq (Hz)")
         ax.set_ylim([46.0, 52.0])
+        ax.set_xlim(0, NUM_POINTS)
         fig_agg.draw()
         # Update switches
         switchTextBox.update(f'Switches:    {switchStatus}')
