@@ -12,6 +12,8 @@ NUM_POINTS = 2000
 NUM_OF_SWITCHES = 10
 NUM_OF_LOADS = 10
 
+quitRequested = False
+
 FSMDecoder = {
     '0': 'IDLE',
     '1': 'SHED',
@@ -37,7 +39,7 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 
 class ReadInput(threading.Thread):
     def run(self):
-        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState
+        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested
 
         for line in sys.stdin:
             if ("_fr," in line):
@@ -54,7 +56,9 @@ class ReadInput(threading.Thread):
             elif("_fsm," in line):
                 [_, state] = line.split(',')
                 FSMState = FSMDecoder[state[0]]
-            # else:
+            elif("_quit" in line):
+                quitRequested = True
+            # elif(len(line) > 1):
             #     print(line)
 
 
@@ -68,10 +72,10 @@ def main():
     layout = [[sg.Canvas(size=(640, 480), key='-CANVAS-')],
               [sg.Text('', size=(25, 1), font=('Helvetica', 15),
                        justification='left', pad=((45, 0), 3), key='switchStatusText', background_color='lavender', text_color='black'), sg.Text('', size=(25, 1), font=('Helvetica', 15),
-                       justification='left', key='loadStatusText', background_color='lavender', text_color='black')],
+                                                                                                                                                 justification='left', key='loadStatusText', background_color='lavender', text_color='black')],
               [sg.Text('', size=(25, 1), font=('Helvetica', 15),
                        justification='left', pad=((45, 0), 3), key='FSMStateText', background_color='lavender', text_color='black'), sg.Text('', size=(25, 1), font=('Helvetica', 15),
-                       justification='left', key='reactionTimeText', background_color='lavender', text_color='black')]]
+                                                                                                                                             justification='left', key='reactionTimeText', background_color='lavender', text_color='black')]]
 
     # create the form and show it without the plot
     window = sg.Window('CS723 Visualiser',
@@ -96,8 +100,8 @@ def main():
 
     while(True):
         event, values = window.read(timeout=10)
-        if event in ('Exit', None):
-            exit(69)
+        if quitRequested:
+            exit(0)
         ax.cla()                    # clear the subplot
         ax.grid()                   # draw the grid
         ax.plot(range(NUM_POINTS), list(freq_q),  color='darkblue')
@@ -106,7 +110,8 @@ def main():
         ax.set_ylabel("Freq (Hz)")
         ax.set_ylim([46.0, 52.0])
         ax.set_xlim(0, NUM_POINTS)
-        ax.annotate("%.3f" % freq_q[-1], (NUM_POINTS-1, freq_q[-1]), xytext = (NUM_POINTS + 10, freq_q[-1]))
+        ax.annotate("%.3f" % freq_q[-1], (NUM_POINTS-1,
+                                          freq_q[-1]), xytext=(NUM_POINTS + 10, freq_q[-1]))
 
         fig_agg.draw()
         # Update switches
@@ -115,7 +120,8 @@ def main():
         loadTextBox.update(f'Loads:        {loadStatus}')
         # Update FSM
         FSMTextBox.update(f'FSM State: {FSMState}')
-        reactionTextBox.update(f'Shed Latency:             {shedLatency:>04}ms')
+        reactionTextBox.update(
+            f'Shed Latency:             {shedLatency:>04}ms')
 
     window.close()
 

@@ -109,6 +109,10 @@ void keyboard_isr(void *context, alt_u32 id)
 	{
 		printf("New keyboard input %c\n", ascii);
 		fflush(stdout);
+		if (ascii == 'q' || ascii == 'Q')
+		{
+			printf("_quit\n");
+		}
 	}
 }
 

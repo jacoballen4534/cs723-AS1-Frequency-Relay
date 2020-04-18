@@ -90,10 +90,6 @@ void mockKeyboardInput(void *pvParameters)
 			{
 				pushButtonHandler(keyboardInput);
 			}
-			else if (keyboardInput == 'q')
-			{
-				exit(0);
-			}
 			else
 			{
 				// Put key in keyboard_device structure.
@@ -107,6 +103,11 @@ void mockKeyboardInput(void *pvParameters)
 				else
 				{
 					printf("New keyboard event. No keyboard_isr_handler defined\n");
+				}
+
+				if (keyboardInput == 'q' || keyboardInput == 'Q')
+				{
+					exit(0);
 				}
 			}
 		}
