@@ -93,7 +93,6 @@ void vLoadControlTask(void *pvParameters)
                 else if (shedCount > (NUM_LOADS - switchedOffCnt)) shedCount = (NUM_LOADS - switchedOffCnt);
 
                 allConnected = (shedCount == 0) ? true : false; //FIXME: Mutex guard
-                printf("Shed count: %d\n", shedCount); //debug print
             }
 
             xSemaphoreTake(xSwitchMutex, portMAX_DELAY);

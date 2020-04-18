@@ -122,6 +122,7 @@ void loadShedTick(FreqReading fr, enum State *state)
 void vLoadShedderTask(void *pvParameters)
 {
     enum State state = IDLE;
+    printf("_fsm,%d\n", (state));
     while (1)
     {
         FreqReading fr;

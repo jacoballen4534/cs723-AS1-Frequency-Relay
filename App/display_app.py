@@ -23,6 +23,7 @@ ts_q = collections.deque([0]*NUM_POINTS, maxlen=NUM_POINTS)
 switchStatus = "0 "*NUM_OF_SWITCHES
 loadStatus = "0 "*NUM_OF_LOADS
 FSMState = ""
+shedLatency = 0
 
 data_lock = threading.RLock()
 
@@ -53,28 +54,24 @@ class ReadInput(threading.Thread):
             elif("_fsm," in line):
                 [_, state] = line.split(',')
                 FSMState = FSMDecoder[state[0]]
-            else:
-                print(line)
+            # else:
+            #     print(line)
 
 
 def main():
     global freq_q, roc_q, ts_q
-
     print("ENTERED PYTHON APP\r\n")
-
+    bg_col = sg.theme_background_color()
     ReadInput().start()
 
     # define the form layout
-    layout = [[sg.Text('Frequency', size=(40, 1),
-                       justification='center', font='Helvetica 20')],
-              [sg.Canvas(size=(640, 480), key='-CANVAS-')],
-              [sg.Text('', size=(40, 1), font=('Helvetica', 15),
-                       justification='center', key='switchStatusText')],
-              [sg.Text('', size=(40, 1), font=('Helvetica', 15),
-                       justification='center', key='loadStatusText')],
-              [sg.Text('', size=(40, 1), font=('Helvetica', 15),
-                       justification='center', key='FSMStateText')],
-              [sg.Button('Exit', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')]]
+    layout = [[sg.Canvas(size=(640, 480), key='-CANVAS-')],
+              [sg.Text('', size=(25, 1), font=('Helvetica', 15),
+                       justification='left', pad=((45, 0), 3), key='switchStatusText', background_color='lavender', text_color='black'), sg.Text('', size=(25, 1), font=('Helvetica', 15),
+                       justification='left', key='loadStatusText', background_color='lavender', text_color='black')],
+              [sg.Text('', size=(25, 1), font=('Helvetica', 15),
+                       justification='left', pad=((45, 0), 3), key='FSMStateText', background_color='lavender', text_color='black'), sg.Text('', size=(25, 1), font=('Helvetica', 15),
+                       justification='left', key='reactionTimeText', background_color='lavender', text_color='black')]]
 
     # create the form and show it without the plot
     window = sg.Window('CS723 Visualiser',
@@ -85,13 +82,16 @@ def main():
     switchTextBox = window['switchStatusText']
     loadTextBox = window['loadStatusText']
     FSMTextBox = window['FSMStateText']
+    reactionTextBox = window['reactionTimeText']
     # draw the initial plot in the window
-    fig = Figure()
+    fig = Figure(facecolor=bg_col)
+
     ax = fig.add_subplot(111)
     ax.set_xlabel("Time (ticks)")
     ax.set_ylabel("Freq (Hz)")
     ax.set_ylim([46.0, 52.0])
     ax.grid()
+    fig.set_tight_layout(True)
     fig_agg = draw_figure(canvas, fig)
 
     while(True):
@@ -100,15 +100,19 @@ def main():
             exit(69)
         ax.cla()                    # clear the subplot
         ax.grid()                   # draw the grid
-        ax.plot(range(NUM_POINTS), list(freq_q),  color='purple')
+        ax.plot(range(NUM_POINTS), list(freq_q),  color='darkblue')
+        ax.set_facecolor(bg_col)
+        ax.set_xlabel("Time (ticks)")
+        ax.set_ylabel("Freq (Hz)")
         ax.set_ylim([46.0, 52.0])
         fig_agg.draw()
         # Update switches
-        switchTextBox.update(f'Switches: {switchStatus}')
+        switchTextBox.update(f'Switches:    {switchStatus}')
         # Update loads
-        loadTextBox.update(f'Loads:     {loadStatus}')
+        loadTextBox.update(f'Loads:        {loadStatus}')
         # Update FSM
         FSMTextBox.update(f'FSM State: {FSMState}')
+        reactionTextBox.update(f'Shed Latency:             {shedLatency:>04}ms')
 
     window.close()
 
