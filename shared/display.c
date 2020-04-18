@@ -5,6 +5,7 @@
 
 extern uint8_t switchVal[NUM_LOADS];
 extern uint8_t loadStatus[NUM_LOADS];
+extern double freqThresh;
 
 void vDisplayOutputTask(void *pvParameters);
 void initialiseBuffer();
@@ -36,44 +37,40 @@ void initialiseBuffer()
 
 void vDisplayOutputTask(void *pvParameters)
 {
-    while(1)
+    int i;
+    while (1)
     {
         vTaskDelay(100 / portTICK_PERIOD_MS);
         FreqReading fr;
         insertIndex = 0;
-        while(xQueueReceive(freqDisplayQ, (void *)&fr, (TickType_t) 0))
+        while (xQueueReceive(freqDisplayQ, (void *)&fr, (TickType_t)0))
         {
             displayBuffer[insertIndex++] = fr;
         }  
 
-        {
             //TODO: Use mutex
             printf("_lo,");
-            uint8_t i;
             for (i = 0; i < NUM_LOADS; i++)
             {
                 printf("%d,", loadStatus[i]);
             }
             printf("\r\n");
-        }
 
-        {
             //TODO: Use mutex
             printf("_sw,");
-            uint8_t i;
             for (i = 0; i < NUM_LOADS; i++)
             {
                 printf("%u,", switchVal[i]);
             }
             printf("\r\n");
+
+        for (i = 0; i < insertIndex; i++)
+        {
+            printf("_fr,%.3lf,%.3lf,%u\n", displayBuffer[i].freq, displayBuffer[i].RoC, displayBuffer[i].timestamp);
         }
 
-        //output to UART
-        int i;
-        for(i = 0; i < insertIndex; i++)
-        {
-            printf("_fr,%.3lf,%.3lf,%u\n", displayBuffer[i].freq, displayBuffer[i].RoC,displayBuffer[i].timestamp);
-        }
+        // TODO: Use mutex or 1 deep q
+        printf("_fth,%.3lf\n", freqThresh);
     }
 }
 

@@ -26,6 +26,7 @@ switchStatus = "0 "*NUM_OF_SWITCHES
 loadStatus = "0 "*NUM_OF_LOADS
 FSMState = ""
 shedLatency = 0
+frequencyThreshold = 0
 
 data_lock = threading.RLock()
 
@@ -39,7 +40,7 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 
 class ReadInput(threading.Thread):
     def run(self):
-        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested
+        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested, frequencyThreshold
 
         for line in sys.stdin:
             if ("_fr," in line):
@@ -58,6 +59,9 @@ class ReadInput(threading.Thread):
                 FSMState = FSMDecoder[state[0]]
             elif("_quit" in line):
                 quitRequested = True
+            elif("_fth," in line):
+                [_, key] = line.split(',')
+                frequencyThreshold = float(key)
             # elif(len(line) > 1):
             #     print(line)
 
@@ -112,6 +116,7 @@ def main():
         ax.set_xlim(0, NUM_POINTS)
         ax.annotate("%.3f" % freq_q[-1], (NUM_POINTS-1,
                                           freq_q[-1]), xytext=(NUM_POINTS + 10, freq_q[-1]))
+        ax.axhline(y=frequencyThreshold, color='r', linestyle='-')
 
         fig_agg.draw()
         # Update switches
