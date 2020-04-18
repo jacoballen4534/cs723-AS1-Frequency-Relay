@@ -106,6 +106,8 @@ def main():
         ax.set_ylabel("Freq (Hz)")
         ax.set_ylim([46.0, 52.0])
         ax.set_xlim(0, NUM_POINTS)
+        ax.annotate("%.3f" % freq_q[-1], (NUM_POINTS-1, freq_q[-1]), xytext = (NUM_POINTS + 10, freq_q[-1]))
+
         fig_agg.draw()
         # Update switches
         switchTextBox.update(f'Switches:    {switchStatus}')
