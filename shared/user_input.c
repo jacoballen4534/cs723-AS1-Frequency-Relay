@@ -47,6 +47,12 @@
 #include "altera_up_ps2_keyboard.h"
 #endif
 
+// KeyboardISR re-usable variables
+char ascii;
+int status = 0;
+unsigned char key = 0;
+KB_CODE_TYPE decode_mode;
+
 // Local Function Prototypes
 void keyboard_isr(void *context, alt_u32 id);
 void button_isr(void *context, alt_u32 id);
@@ -88,10 +94,6 @@ int initUserInput(void)
 
 void keyboard_isr(void *context, alt_u32 id)
 {
-	char ascii;
-	int status = 0;
-	unsigned char key = 0;
-	KB_CODE_TYPE decode_mode;
 	status = decode_scancode(context, &decode_mode, &key, &ascii);
 	if (status == 0) //success
 	{
