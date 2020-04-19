@@ -71,6 +71,7 @@ void vDisplayOutputTask(void *pvParameters)
 
         // TODO: Use mutex or 1 deep q
         printf("_fth,%.3lf\n", freqThresh);
+        printf("_rth,%.3lf\n", rocThresh);
     }
 }
 

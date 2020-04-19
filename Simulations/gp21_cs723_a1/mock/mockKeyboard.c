@@ -107,6 +107,7 @@ void mockKeyboardInput(void *pvParameters)
 
 				if (keyboardInput == 'q' || keyboardInput == 'Q')
 				{
+					printf("_quit\n");
 					exit(0);
 				}
 			}
