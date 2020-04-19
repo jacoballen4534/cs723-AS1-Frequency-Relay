@@ -66,6 +66,9 @@ class ReadInput(threading.Thread):
             elif("_rth," in line):
                 [_, key] = line.split(',')
                 rocThreshold = float(key)
+            elif("[2J" in line):
+                [_, lcdDisplay] = line.split("J")
+                print("LCD - " + lcdDisplay)
             # elif(len(line) > 1):
             #     print(line)
 

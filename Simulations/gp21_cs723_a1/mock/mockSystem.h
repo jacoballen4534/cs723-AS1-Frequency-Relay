@@ -13,4 +13,8 @@
 #define PUSH_BUTTON_BASE 0x430c0
 #define PUSH_BUTTON_IRQ 1
 
+#define CHARACTER_LCD_NAME "null", "w"); \
+    LCD = stdout;                        \
+    fprintf(LCD
+
 #endif /* MOCKSYSTEM_H */

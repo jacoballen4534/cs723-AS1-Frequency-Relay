@@ -14,7 +14,7 @@
 
 // Forward Declarations of task helper
 void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
-
+void shutDown(void);
 // Forward declare local function
 void mockKeyboardInput(void *pvParameters);
 
@@ -103,12 +103,6 @@ void mockKeyboardInput(void *pvParameters)
 				else
 				{
 					printf("New keyboard event. No keyboard_isr_handler defined\n");
-				}
-
-				if (keyboardInput == 'q' || keyboardInput == 'Q')
-				{
-					printf("_quit\n");
-					exit(0);
 				}
 			}
 		}
