@@ -37,26 +37,14 @@
 
 #include <stdio.h>
 #include "taskMacros.h"
+#include "freertos_includes.h"
+#include "vars.h"
 
 #ifdef __SIMULATION__
-#include "mockSystem.h"
 #include "mockKeyboard.h"
-#include "mockIO.h"
-// Scheduler includes
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
 #else
-#include "io.h"
-#include "system.h"
 #include "altera_up_avalon_ps2.h"
 #include "altera_up_ps2_keyboard.h"
-#include "sys/alt_irq.h"
-#include "altera_avalon_pio_regs.h"
-// Scheduler includes
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
 #endif
 
 // Local Function Prototypes
