@@ -13,8 +13,6 @@ enum State
     SHED = 1,
     RECONNECT = 2
 };
-double freqThresh = 49.0;
-double rocThresh = 8.0;
 
 //feedback from loadControl so we know when to enter 'idle'
 extern bool allConnected; //fixme: mutex guard
@@ -128,6 +126,8 @@ void vLoadShedderTask(void *pvParameters)
         FreqReading fr;
         //TODO: Decide if this is portMAX_DELAY and assume that samples come in fast enough to handel timer or 0 delay and check if a new value was received.
         xQueueReceive(freqDataQ, (void *)&fr, portMAX_DELAY);
+        xSemaphoreTake(xThreshMutex, portMAX_DELAY);
         loadShedTick(fr, &state);
+        xSemaphoreGive(xThreshMutex);
     }
 }

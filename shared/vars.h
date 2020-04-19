@@ -4,9 +4,11 @@
 #ifdef __SIMULATION__
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "semphr.h"
 #else
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+#include "freertos/semphr.h"
 #endif
 
 typedef enum { false, true } bool;
@@ -32,17 +34,22 @@ QueueHandle_t shedReconnectQ;
 #define USER_INPUT_NOTIFICATION 2
 #define LOAD_SHEDDER_NOTIFICATION 3
 
-typedef struct FreqReading {
+typedef struct FreqReading
+{
     double freq;
 	double RoC;
 	TickType_t timestamp;
 } FreqReading;
 
-typedef struct AnalyserReading {
+typedef struct AnalyserReading
+{
     unsigned int count;
 	TickType_t timestamp;
 } AnalyserReading;
 
 #define DISPLAY_BUFFER_LENGTH 50
 
+SemaphoreHandle_t xThreshMutex;
+double freqThresh;
+double rocThresh;
 #endif /* SHARED_VARS_H */

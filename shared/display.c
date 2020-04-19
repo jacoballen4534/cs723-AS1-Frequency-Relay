@@ -3,16 +3,16 @@
 #include "taskMacros.h"
 #include "freertos_includes.h"
 
+#define PRINT_MUTEX_BLOCK_TIME 5
+
 extern uint8_t switchVal[NUM_LOADS];
 extern uint8_t loadStatus[NUM_LOADS];
-extern double freqThresh;
 
 void vDisplayOutputTask(void *pvParameters);
 void initialiseBuffer();
 
 FreqReading displayBuffer[DISPLAY_BUFFER_LENGTH];
 int insertIndex = DISPLAY_BUFFER_LENGTH - 1;
-;
 
 int initDisplay(void)
 {
@@ -69,9 +69,11 @@ void vDisplayOutputTask(void *pvParameters)
             printf("_fr,%.3lf,%.3lf,%u\n", displayBuffer[i].freq, displayBuffer[i].RoC, displayBuffer[i].timestamp);
         }
 
-        // TODO: Use mutex or 1 deep q
+        xSemaphoreTake(xThreshMutex, PRINT_MUTEX_BLOCK_TIME);
         printf("_fth,%.3lf\n", freqThresh);
         printf("_rth,%.3lf\n", rocThresh);
+        xSemaphoreGive(xThreshMutex);
+
     }
 }
 

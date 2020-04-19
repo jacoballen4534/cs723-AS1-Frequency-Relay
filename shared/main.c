@@ -85,4 +85,9 @@ void initSharedVars(void)
 		fputs("Could not create shedReconnectQ queue", stderr);
 		exit(1);
 	}
+
+	freqThresh = 49.0;
+	rocThresh = 8.0;
+	xThreshMutex = xSemaphoreCreateMutex();
+
 }
