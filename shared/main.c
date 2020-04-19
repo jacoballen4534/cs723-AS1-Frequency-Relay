@@ -25,6 +25,7 @@ int initLoadShedder(void);
 
 // declare local functions
 void initSharedVars(void);
+void shutDown(void);
 
 int main(int argc, char *argv[], char *envp[])
 {
@@ -55,42 +56,42 @@ void initSharedVars(void)
 	if (newFreqQ == 0)
 	{
 		fputs("Could not create newFreqQ queue", stderr);
-		exit(1);
+		shutDown();
 	}
 
 	loadControlNotifyQ = xQueueCreate(LOAD_CONTROL_NOTIFY_Q_LENGTH, sizeof(unsigned int));
 	if (loadControlNotifyQ == 0)
 	{
 		fputs("Could not create loadControlNotifyQ queue", stderr);
-		exit(1);
+		shutDown();
 	}
 
 	freqDisplayQ = xQueueCreate(FREQ_DISPLAY_Q_LENGTH, sizeof(FreqReading));
 	if (freqDisplayQ == 0)
 	{
 		fputs("Could not create freqDisplayQ queue", stderr);
-		exit(1);
+		shutDown();
 	}
 
 	freqDataQ = xQueueCreate(FREQ_DATA_Q_LENGTH, sizeof(FreqReading));
 	if (freqDataQ == 0)
 	{
 		fputs("Could not create freqDataQ queue", stderr);
-		exit(1);
+		shutDown();
 	}
 
 	shedReconnectQ = xQueueCreate(SHED_RECONNECT_Q_LENGTH, sizeof(int));
 	if (shedReconnectQ == 0)
 	{
 		fputs("Could not create shedReconnectQ queue", stderr);
-		exit(1);
+		shutDown();
 	}
 
 	inputQ = xQueueCreate(INPUT_Q_LENGTH, sizeof(char));
 	if (inputQ == 0)
 	{
 		fputs("Could not create inputQ queue", stderr);
-		exit(1);
+		shutDown();
 	}
 
 	freqThresh = 49.0;
@@ -104,4 +105,14 @@ void initSharedVars(void)
 
 	xIsMaintenanceMutex = xSemaphoreCreateMutex();
 	isMaintenance = false;
+}
+
+void shutDown(void)
+{
+	printf("_quit\n");
+	fflush(stdin);
+#ifdef __SIMULATION__
+	getchar();
+	exit(1);
+#endif
 }

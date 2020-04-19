@@ -50,6 +50,8 @@
 #define USER_INPUT_BUFFER_BLOCK_TIME 10
 const char pushButtonSpecialValue = (char)250;
 
+// Forward declare
+void shutDown(void);
 // KeyboardISR re-usable variables
 char ascii;
 int status = 0;
@@ -69,7 +71,7 @@ int initUserInput(void)
 	if (keyboard_device == NULL)
 	{
 		fputs("can't find PS/2 device\n", stderr);
-		exit(1);
+		shutDown();
 	}
 
 #ifdef __SIMULATION__
@@ -145,7 +147,7 @@ void vUserInputTask(void *pvParameters)
 			break;
 		case 'q': //Quit
 		case 'Q':
-			printf("_quit\n");
+			shutDown();
 			break;
 		case (char)8: //Backspace
 			if (userInputBufferIndex > 0)
