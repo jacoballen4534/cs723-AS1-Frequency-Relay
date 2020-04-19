@@ -86,8 +86,19 @@ void initSharedVars(void)
 		exit(1);
 	}
 
+	inputQ = xQueueCreate(INPUT_Q_LENGTH, sizeof(char));
+	if (inputQ == 0)
+	{
+		fputs("Could not create inputQ queue", stderr);
+		exit(1);
+	}
+
 	freqThresh = 49.0;
 	rocThresh = 8.0;
 	xThreshMutex = xSemaphoreCreateMutex();
 
+	xUserInputBufferMutex = xSemaphoreCreateMutex();
+	userInputBufferIndex = 0;
+	newUserInputValue = true;
+	updateType = Frequency;
 }

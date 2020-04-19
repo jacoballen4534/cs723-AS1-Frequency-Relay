@@ -47,6 +47,9 @@
 #include "altera_up_ps2_keyboard.h"
 #endif
 
+#define USER_INPUT_BUFFER_BLOCK_TIME 10
+const char pushButtonSpecialValue = 250;
+
 // KeyboardISR re-usable variables
 char ascii;
 int status = 0;
@@ -56,6 +59,7 @@ KB_CODE_TYPE decode_mode;
 // Local Function Prototypes
 void keyboard_isr(void *context, alt_u32 id);
 void button_isr(void *context, alt_u32 id);
+void vUserInputTask(void *pvParameters);
 
 // This function initialises the process that captures keyboard inputs
 int initUserInput(void)
@@ -89,6 +93,10 @@ int initUserInput(void)
 	// register the ISR
 	alt_irq_register(PUSH_BUTTON_IRQ, NULL, button_isr);
 
+	// Start userInputTask task
+	BaseType_t taskStatus = xTaskCreate(vUserInputTask, "vUserInputTask", TASK_STACKSIZE, NULL, USER_INPUT_PRIORITY, NULL);
+	handleTaskCreateError(taskStatus, "vUserInputTask");
+
 	return 0;
 }
 
@@ -97,20 +105,132 @@ void keyboard_isr(void *context, alt_u32 id)
 	status = decode_scancode(context, &decode_mode, &key, &ascii);
 	if (status == 0) //success
 	{
-		printf("New keyboard input %c\n", ascii);
-		fflush(stdout);
-		if (ascii == 'q' || ascii == 'Q')
+		BaseType_t queueSendStatus = xQueueSendFromISR(inputQ, (void *)&ascii, NULL);
+		if (queueSendStatus != pdTRUE)
 		{
-			printf("_quit\n");
+			printf("inputQ is full (keyboard isr)\n");
 		}
 	}
 }
 
 void button_isr(void *context, alt_u32 id)
 {
-
-	printf("Push button was pressed ISR\n");
+	BaseType_t queueSendStatus = xQueueSendFromISR(inputQ, (void *)&pushButtonSpecialValue, NULL);
+	if (queueSendStatus != pdTRUE)
+	{
+		printf("inputQ is full (button isr)\n");
+	}
 
 	// clears the edge capture register
 	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSH_BUTTON_BASE, 0x0001);
+}
+
+void vUserInputTask(void *pvParameters)
+{
+	char input;
+	bool gotDecimalPoint = false;
+	while (1)
+	{
+		xQueueReceive(inputQ, (void *)&input, portMAX_DELAY);
+
+		if (input == pushButtonSpecialValue)
+		{
+			printf("Push button was pressed userInputTask\n");
+			continue;
+		}
+
+		switch (input)
+		{
+		case 'q': //Quit
+		case 'Q':
+			printf("_quit\n");
+			break;
+		case (char)8: //Backspace
+			if (userInputBufferIndex > 0)
+			{
+				userInputBufferIndex--;
+				if (userInputBuffer[userInputBufferIndex] == '.')
+				{
+					gotDecimalPoint = false;
+				}
+				newUserInputValue = true;
+			}
+			else
+			{
+				printf("nothing left to delete\n");
+			}
+			break;
+
+		case 'f':
+		case 'F':
+			updateType = Frequency;
+			newUserInputValue = true;
+			break;
+
+		case 'r':
+		case 'R':
+			updateType = Roc;
+			newUserInputValue = true;
+			break;
+
+		case (char)10: // Enter
+		case (char)13:
+			if (userInputBufferIndex == 0)
+			{
+				break;
+			}
+			xSemaphoreTake(xUserInputBufferMutex, USER_INPUT_BUFFER_BLOCK_TIME);
+			userInputBuffer[userInputBufferIndex] = '\0';
+			float newValue = atof(userInputBuffer);
+			userInputBufferIndex = 0;
+			xSemaphoreGive(xUserInputBufferMutex);
+
+			xSemaphoreTake(xThreshMutex, portMAX_DELAY);
+			if (updateType == Frequency)
+			{
+				freqThresh = newValue;
+			}
+			else
+			{
+				rocThresh = newValue;
+			}
+			xSemaphoreGive(xThreshMutex);
+
+			gotDecimalPoint = false;
+			newUserInputValue = true;
+			break;
+		case '.':
+			if (!gotDecimalPoint) // only allow a single decimal point
+			{
+				xSemaphoreTake(xUserInputBufferMutex, USER_INPUT_BUFFER_BLOCK_TIME);
+				userInputBuffer[userInputBufferIndex] = '.';
+				userInputBufferIndex++;
+				newUserInputValue = true;
+				gotDecimalPoint = true;
+				xSemaphoreGive(xUserInputBufferMutex);
+			}
+			break;
+		default:
+			if (userInputBufferIndex < USER_INPUT_BUFFER_LENGTH)
+			{
+				if ('0' <= input && input <= '9') // Only accept numbers
+				{
+					xSemaphoreTake(xUserInputBufferMutex, USER_INPUT_BUFFER_BLOCK_TIME);
+					userInputBuffer[userInputBufferIndex] = input;
+					userInputBufferIndex++;
+					newUserInputValue = true;
+					xSemaphoreGive(xUserInputBufferMutex);
+				}
+			}
+			else
+			{
+				printf("userInputBuffer is full\n");
+			}
+
+			break;
+		}
+
+		// send to lcd display
+		// Wait for enter to cast and update freq.
+	}
 }

@@ -74,9 +74,21 @@ void vDisplayOutputTask(void *pvParameters)
         printf("_rth,%.3lf\n", rocThresh);
         xSemaphoreGive(xThreshMutex);
 
+        //update LCD (keyboard input buffer?)
+        if (newUserInputValue)
+        {
+            if (xSemaphoreTake(xUserInputBufferMutex, PRINT_MUTEX_BLOCK_TIME))
+            {
+                // Write to display.
+                updateType == Frequency ? printf("Frequency: ") : printf("Roc: ");
+                for (i = 0; i < userInputBufferIndex; i++)
+                {
+                    printf("%c", userInputBuffer[i]);
+                }
+                printf("\n");
+                newUserInputValue = false;
+                xSemaphoreGive(xUserInputBufferMutex);
+            }
+        }
     }
 }
-
-//update UART output
-
-//update LCD (keyboard input buffer?)

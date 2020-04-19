@@ -11,7 +11,17 @@
 #include "freertos/semphr.h"
 #endif
 
-typedef enum { false, true } bool;
+typedef enum
+{
+	false,
+	true
+} bool;
+
+typedef enum
+{
+	Frequency,
+	Roc
+} UpdateType;
 
 #define NUM_LOADS 10
 
@@ -25,10 +35,13 @@ QueueHandle_t loadControlNotifyQ;
 QueueHandle_t freqDisplayQ;
 
 #define FREQ_DATA_Q_LENGTH 30
-QueueHandle_t freqDataQ;	
+QueueHandle_t freqDataQ;
 
 #define SHED_RECONNECT_Q_LENGTH 30
 QueueHandle_t shedReconnectQ;
+
+#define INPUT_Q_LENGTH 30
+QueueHandle_t inputQ;
 
 #define WALL_SWITCH_NOTIFICATION 1
 #define USER_INPUT_NOTIFICATION 2
@@ -36,14 +49,14 @@ QueueHandle_t shedReconnectQ;
 
 typedef struct FreqReading
 {
-    double freq;
+	double freq;
 	double RoC;
 	TickType_t timestamp;
 } FreqReading;
 
 typedef struct AnalyserReading
 {
-    unsigned int count;
+	unsigned int count;
 	TickType_t timestamp;
 } AnalyserReading;
 
@@ -52,4 +65,12 @@ typedef struct AnalyserReading
 SemaphoreHandle_t xThreshMutex;
 double freqThresh;
 double rocThresh;
+
+#define USER_INPUT_BUFFER_LENGTH 5
+SemaphoreHandle_t xUserInputBufferMutex;
+uint16_t userInputBufferIndex;
+char userInputBuffer[USER_INPUT_BUFFER_LENGTH + 1]; // Allow a /0 to be put on the end
+bool newUserInputValue;								// Only update the LCD on new values to prevent flickering.
+UpdateType updateType;								// Indicate what value is being updated
+
 #endif /* SHARED_VARS_H */
