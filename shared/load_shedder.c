@@ -18,6 +18,11 @@ enum State
 extern bool allConnected; //fixme: mutex guard
 
 TimerHandle_t shedTimer;
+SemaphoreHandle_t xThreshMutex;
+double freqThresh;
+double rocThresh;
+SemaphoreHandle_t xIsMaintenanceMutex;
+bool isMaintenance;
 
 #define SHED_TIME_MS 500
 

@@ -12,6 +12,8 @@
 extern uint8_t switchVal[NUM_LOADS];
 extern SemaphoreHandle_t xSwitchMutex;
 bool allConnected = false;
+QueueHandle_t loadControlNotifyQ;
+QueueHandle_t shedReconnectQ;
 /////////////////////////////////////////
 int8_t shedCount = 0;
 // TODO: Add mutex. Does this get its own mutex meaning updateLoadStatus will need to acquire two mutexes? or 1 mutex to cover loadStatus and xSwitchMutex

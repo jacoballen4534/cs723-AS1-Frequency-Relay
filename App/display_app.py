@@ -4,6 +4,9 @@ import threading
 import time
 import copy
 import collections
+import os
+import warnings
+warnings.filterwarnings("ignore")
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
 from matplotlib.figure import Figure
@@ -42,42 +45,46 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 class ReadInput(threading.Thread):
     def run(self):
         global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested, frequencyThreshold, rocThreshold
-
-        for line in sys.stdin:
-            if ("_fr," in line):
-                keys = line.split(',')
-                freq_q.append(float(keys[1]))
-                roc_q.append(float(keys[2]))
-                ts_q.append(float(keys[3]))
-            elif("_sw," in line):
-                keys = line.split(',')
-                switchStatus = ' '.join(map(str, keys[1:]))
-            elif("_lo," in line):
-                keys = line.split(',')
-                loadStatus = ' '.join(map(str, keys[1:]))
-            elif("_fsm," in line):
-                [_, state] = line.split(',')
-                FSMState = FSMDecoder[state[0]]
-            elif("_quit" in line):
-                quitRequested = True
-            elif("_fth," in line):
-                [_, key] = line.split(',')
-                frequencyThreshold = float(key)
-            elif("_rth," in line):
-                [_, key] = line.split(',')
-                rocThreshold = float(key)
-            elif("[2J" in line):
-                [_, lcdDisplay] = line.split("J")
-                print("LCD - " + lcdDisplay)
-            # elif(len(line) > 1):
-            #     print(line)
+        try:
+            for line in sys.stdin:
+                if ("_fr," in line):
+                    keys = line.split(',')
+                    freq_q.append(float(keys[1]))
+                    roc_q.append(float(keys[2]))
+                    ts_q.append(float(keys[3]))
+                elif("_sw," in line):
+                    keys = line.split(',')
+                    switchStatus = ' '.join(map(str, keys[1:]))
+                elif("_lo," in line):
+                    keys = line.split(',')
+                    loadStatus = ' '.join(map(str, keys[1:]))
+                elif("_fsm," in line):
+                    [_, state] = line.split(',')
+                    FSMState = FSMDecoder[state[0]]
+                elif("_quit" in line):
+                    quitRequested = True
+                elif("_fth," in line):
+                    [_, key] = line.split(',')
+                    frequencyThreshold = float(key)
+                elif("_rth," in line):
+                    [_, key] = line.split(',')
+                    rocThreshold = float(key)
+                elif("[2J" in line):
+                    [_, lcdDisplay] = line.split("J")
+                    print("LCD - " + lcdDisplay)
+                elif(len(line) > 1):
+                    print(line)
+        except ValueError as e:
+            sys.exit()
 
 
 def main():
     global freq_q, roc_q, ts_q
     print("ENTERED PYTHON APP\r\n")
     bg_col = sg.theme_background_color()
-    ReadInput().start()
+    t = ReadInput()
+    #t.setDaemon(True)
+    t.start()
 
     # define the form layout
     layout = [[sg.Canvas(size=(640, 480), key='-CANVAS-')],
@@ -86,11 +93,12 @@ def main():
                                                                                                                                                  justification='left', key='loadStatusText', background_color='lavender', text_color='black')],
               [sg.Text('', size=(25, 1), font=('Helvetica', 15),
                        justification='left', pad=((45, 0), 3), key='FSMStateText', background_color='lavender', text_color='black'), sg.Text('', size=(25, 1), font=('Helvetica', 15),
-                                                                                                                                             justification='left', key='reactionTimeText', background_color='lavender', text_color='black')]]
+                                                                                                                                             justification='left', key='reactionTimeText', background_color='lavender', text_color='black')],
+                [sg.Button('Exit', size=(8, 1), pad=((275, 0), 3), font='Helvetica 14')]]
 
     # create the form and show it without the plot
     window = sg.Window('CS723 Visualiser',
-                       layout, finalize=True)
+                       layout, finalize=True, disable_close=True)
 
     canvas_elem = window['-CANVAS-']
     canvas = canvas_elem.TKCanvas
@@ -112,7 +120,12 @@ def main():
     while(True):
         event, values = window.read(timeout=10)
         if quitRequested:
-            exit(0)
+            window.close()
+            exit(69)
+        if event in ('Exit', None):
+            window.close()
+            exit(69)
+
         ax.cla()                    # clear the subplot
         ax.grid()                   # draw the grid
         ax.plot(range(NUM_POINTS), list(freq_q),  color='darkblue')
@@ -139,7 +152,6 @@ def main():
             f'Shed Latency:             {shedLatency:>04}ms')
 
     window.close()
-
 
 if __name__ == "__main__":
     main()

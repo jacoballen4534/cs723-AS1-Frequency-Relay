@@ -12,6 +12,10 @@
 
 #define SAMPLING_FREQUENCY 16000.0
 
+QueueHandle_t newFreqQ;
+QueueHandle_t freqDisplayQ;
+QueueHandle_t freqDataQ;
+
 // Local Function Prototypes
 void processFrequency(void *pvParameters);
 void freq_isr();

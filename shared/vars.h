@@ -26,22 +26,22 @@ typedef enum
 #define NUM_LOADS 10
 
 #define NEW_FREQ_Q_LENGTH 20
-QueueHandle_t newFreqQ;
+extern QueueHandle_t newFreqQ;
 
 #define LOAD_CONTROL_NOTIFY_Q_LENGTH 30
-QueueHandle_t loadControlNotifyQ;
+extern QueueHandle_t loadControlNotifyQ;
 
 #define FREQ_DISPLAY_Q_LENGTH 30
-QueueHandle_t freqDisplayQ;
+extern QueueHandle_t freqDisplayQ;
 
 #define FREQ_DATA_Q_LENGTH 30
-QueueHandle_t freqDataQ;
+extern QueueHandle_t freqDataQ;
 
 #define SHED_RECONNECT_Q_LENGTH 30
-QueueHandle_t shedReconnectQ;
+extern QueueHandle_t shedReconnectQ;
 
 #define INPUT_Q_LENGTH 30
-QueueHandle_t inputQ;
+extern QueueHandle_t inputQ;
 
 #define WALL_SWITCH_NOTIFICATION 1
 #define USER_INPUT_NOTIFICATION 2
@@ -62,18 +62,18 @@ typedef struct AnalyserReading
 
 #define DISPLAY_BUFFER_LENGTH 50
 
-SemaphoreHandle_t xThreshMutex;
-double freqThresh;
-double rocThresh;
+extern SemaphoreHandle_t xThreshMutex;
+extern double freqThresh;
+extern double rocThresh;
 
 #define USER_INPUT_BUFFER_LENGTH 5
-SemaphoreHandle_t xUserInputBufferMutex;
-uint16_t userInputBufferIndex;
-char userInputBuffer[USER_INPUT_BUFFER_LENGTH + 1]; // Allow a /0 to be put on the end
-bool newUserInputValue;								// Only update the LCD on new values to prevent flickering.
-UpdateType updateType;								// Indicate what value is being updated
+extern SemaphoreHandle_t xUserInputBufferMutex;
+extern uint16_t userInputBufferIndex;
+extern char userInputBuffer[USER_INPUT_BUFFER_LENGTH + 1]; // Allow a /0 to be put on the end
+extern bool newUserInputValue;								// Only update the LCD on new values to prevent flickering.
+extern UpdateType updateType;								// Indicate what value is being updated
 
-SemaphoreHandle_t xIsMaintenanceMutex;
-bool isMaintenance;
+extern SemaphoreHandle_t xIsMaintenanceMutex;
+extern bool isMaintenance;
 
 #endif /* SHARED_VARS_H */

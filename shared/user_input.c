@@ -48,7 +48,7 @@
 #endif
 
 #define USER_INPUT_BUFFER_BLOCK_TIME 10
-const char pushButtonSpecialValue = (char)250;
+#define PUSH_BUTTON_SPECIAL_VALUE 250
 
 // Forward declare
 void shutDown(void);
@@ -62,6 +62,13 @@ KB_CODE_TYPE decode_mode;
 void keyboard_isr(void *context, alt_u32 id);
 void button_isr(void *context, alt_u32 id);
 void vUserInputTask(void *pvParameters);
+
+uint16_t userInputBufferIndex;
+char userInputBuffer[USER_INPUT_BUFFER_LENGTH + 1] = {0}; // Allow a /0 to be put on the end
+bool newUserInputValue;								// Only update the LCD on new values to prevent flickering.
+UpdateType updateType;								// Indicate what value is being updated
+QueueHandle_t inputQ;
+SemaphoreHandle_t xUserInputBufferMutex;
 
 // This function initialises the process that captures keyboard inputs
 int initUserInput(void)
@@ -105,7 +112,8 @@ int initUserInput(void)
 void keyboard_isr(void *context, alt_u32 id)
 {
 	status = decode_scancode(context, &decode_mode, &key, &ascii);
-	if (status == 0) //success
+	printf("Decode mode: %d\n", decode_mode);
+	if (status == 0 && decode_mode == KB_ASCII_MAKE_CODE) //success
 	{
 		BaseType_t queueSendStatus = xQueueSendFromISR(inputQ, (void *)&ascii, NULL);
 		if (queueSendStatus != pdTRUE)
@@ -117,6 +125,7 @@ void keyboard_isr(void *context, alt_u32 id)
 
 void button_isr(void *context, alt_u32 id)
 {
+	char pushButtonSpecialValue = PUSH_BUTTON_SPECIAL_VALUE;
 	BaseType_t queueSendStatus = xQueueSendFromISR(inputQ, (void *)&pushButtonSpecialValue, NULL);
 	if (queueSendStatus != pdTRUE)
 	{
@@ -137,7 +146,7 @@ void vUserInputTask(void *pvParameters)
 
 		switch (input)
 		{
-		case pushButtonSpecialValue: // Toggle maintainence mode
+		case PUSH_BUTTON_SPECIAL_VALUE: // Toggle maintainence mode
 			xSemaphoreTake(xIsMaintenanceMutex, USER_INPUT_BUFFER_BLOCK_TIME);
 			isMaintenance = !isMaintenance;
 			printf("isMaintenance updated to ");
@@ -157,6 +166,7 @@ void vUserInputTask(void *pvParameters)
 				{
 					gotDecimalPoint = false;
 				}
+				userInputBuffer[userInputBufferIndex] = 0;
 				newUserInputValue = true;
 			}
 			else
@@ -169,12 +179,16 @@ void vUserInputTask(void *pvParameters)
 		case 'F':
 			updateType = Frequency;
 			newUserInputValue = true;
+			userInputBufferIndex = 0;
+			userInputBuffer[userInputBufferIndex] = 0;
 			break;
 
 		case 'r':
 		case 'R':
 			updateType = Roc;
 			newUserInputValue = true;
+			userInputBufferIndex = 0;
+			userInputBuffer[userInputBufferIndex] = 0;
 			break;
 
 		case (char)10: // Enter
@@ -184,7 +198,6 @@ void vUserInputTask(void *pvParameters)
 				break;
 			}
 			xSemaphoreTake(xUserInputBufferMutex, USER_INPUT_BUFFER_BLOCK_TIME);
-			userInputBuffer[userInputBufferIndex] = '\0';
 			float newValue = atof(userInputBuffer);
 			userInputBufferIndex = 0;
 			xSemaphoreGive(xUserInputBufferMutex);
@@ -208,6 +221,7 @@ void vUserInputTask(void *pvParameters)
 			{
 				xSemaphoreTake(xUserInputBufferMutex, USER_INPUT_BUFFER_BLOCK_TIME);
 				userInputBuffer[userInputBufferIndex] = '.';
+				userInputBuffer[userInputBufferIndex+1] = 0;
 				userInputBufferIndex++;
 				newUserInputValue = true;
 				gotDecimalPoint = true;
@@ -221,6 +235,7 @@ void vUserInputTask(void *pvParameters)
 				{
 					xSemaphoreTake(xUserInputBufferMutex, USER_INPUT_BUFFER_BLOCK_TIME);
 					userInputBuffer[userInputBufferIndex] = input;
+					userInputBuffer[userInputBufferIndex+1] = 0;
 					userInputBufferIndex++;
 					newUserInputValue = true;
 					xSemaphoreGive(xUserInputBufferMutex);

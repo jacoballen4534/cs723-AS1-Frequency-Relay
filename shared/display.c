@@ -99,11 +99,11 @@ void vDisplayOutputTask(void *pvParameters)
                 // Write to display.
                 if (updateType == Frequency)
                 {
-                    snprintf(LCDPrintBuffer, userInputBufferIndex + 6, "Fre: %s", userInputBuffer);
+                    sprintf(LCDPrintBuffer, "Fre: %s", userInputBuffer);
                 }
                 else
                 {
-                    snprintf(LCDPrintBuffer, userInputBufferIndex + 6, "Roc: %s", userInputBuffer);
+                    sprintf(LCDPrintBuffer, "Roc: %s", userInputBuffer);
                 }
 
                 fprintf(LCD, "%c%s", ESC, CLEAR_LCD_STRING);
