@@ -48,7 +48,9 @@
 #endif
 
 #define USER_INPUT_BUFFER_BLOCK_TIME 10
+#define USER_INPUT_NOTIFY_LOAD_CONTROL_BLOCK_TIME 5
 const char pushButtonSpecialValue = (char)250;
+const uint32_t userInputNotificationValue = USER_INPUT_NOTIFICATION;
 
 // Forward declare
 void shutDown(void);
@@ -143,6 +145,11 @@ void vUserInputTask(void *pvParameters)
 			printf("isMaintenance updated to ");
 			isMaintenance == true ? printf("true\n") : printf("false\n");
 			xSemaphoreGive(xIsMaintenanceMutex);
+			BaseType_t result = xQueueSend(loadControlNotifyQ, (void *)&userInputNotificationValue, USER_INPUT_NOTIFY_LOAD_CONTROL_BLOCK_TIME);
+			if (result == errQUEUE_FULL)
+			{
+				printf("user input update fail as loadControllNotifyQ is full\n");
+			}
 
 			break;
 		case 'q': //Quit
@@ -233,8 +240,5 @@ void vUserInputTask(void *pvParameters)
 
 			break;
 		}
-
-		// send to lcd display
-		// Wait for enter to cast and update freq.
 	}
 }

@@ -102,6 +102,7 @@ void vLoadControlTask(void *pvParameters)
 
         else if (notifySource == USER_INPUT_NOTIFICATION)
         {
+            printf("new user input notification (button only)\n");
         }
     }
 }   
