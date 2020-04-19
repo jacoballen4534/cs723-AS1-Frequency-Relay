@@ -5,6 +5,7 @@
 //2-deep FIFO for current and last value
 
 #include <stdio.h>
+#include <math.h>
 #include "taskMacros.h"
 #include "vars.h"
 #include "freertos_includes.h"
@@ -49,10 +50,9 @@ void processFrequency(void *pvParameters)
 			latestFrequencySample = 0;
 		}
 
-		
-
 		//calculate RoC
 		roc = (latestFrequencySample - previousFrequencySample) * 2.0 * latestFrequencySample * previousFrequencySample / (latestFrequencySample + previousFrequencySample);
+		roc = fabs(roc);
 		previousFrequencySample = latestFrequencySample;
 
 		FreqReading fr = {latestFrequencySample, roc, ADCSamples.timestamp};
@@ -72,7 +72,7 @@ void freq_isr()
 	unsigned int newReading = IORD(FREQUENCY_ANALYSER_BASE, 0);
 	TickType_t timestamp = xTaskGetTickCountFromISR();
 	AnalyserReading ar = {newReading, timestamp};
-	
+
 	BaseType_t queueSendStatus = xQueueSendFromISR(newFreqQ, (void *)&ar, NULL);
 
 	if (queueSendStatus == pdTRUE)

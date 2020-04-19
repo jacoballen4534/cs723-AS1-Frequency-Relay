@@ -48,7 +48,7 @@
 #endif
 
 #define USER_INPUT_BUFFER_BLOCK_TIME 10
-const char pushButtonSpecialValue = 250;
+const char pushButtonSpecialValue = (char)250;
 
 // KeyboardISR re-usable variables
 char ascii;
@@ -133,14 +133,16 @@ void vUserInputTask(void *pvParameters)
 	{
 		xQueueReceive(inputQ, (void *)&input, portMAX_DELAY);
 
-		if (input == pushButtonSpecialValue)
-		{
-			printf("Push button was pressed userInputTask\n");
-			continue;
-		}
-
 		switch (input)
 		{
+		case pushButtonSpecialValue: // Toggle maintainence mode
+			xSemaphoreTake(xIsMaintenanceMutex, USER_INPUT_BUFFER_BLOCK_TIME);
+			isMaintenance = !isMaintenance;
+			printf("isMaintenance updated to ");
+			isMaintenance == true ? printf("true\n") : printf("false\n");
+			xSemaphoreGive(xIsMaintenanceMutex);
+
+			break;
 		case 'q': //Quit
 		case 'Q':
 			printf("_quit\n");

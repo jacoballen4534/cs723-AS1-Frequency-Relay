@@ -101,4 +101,7 @@ void initSharedVars(void)
 	userInputBufferIndex = 0;
 	newUserInputValue = true;
 	updateType = Frequency;
+
+	xIsMaintenanceMutex = xSemaphoreCreateMutex();
+	isMaintenance = false;
 }

@@ -73,4 +73,7 @@ char userInputBuffer[USER_INPUT_BUFFER_LENGTH + 1]; // Allow a /0 to be put on t
 bool newUserInputValue;								// Only update the LCD on new values to prevent flickering.
 UpdateType updateType;								// Indicate what value is being updated
 
+SemaphoreHandle_t xIsMaintenanceMutex;
+bool isMaintenance;
+
 #endif /* SHARED_VARS_H */
