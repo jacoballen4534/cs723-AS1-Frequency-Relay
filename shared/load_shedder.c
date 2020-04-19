@@ -3,7 +3,7 @@
 #include "taskMacros.h"
 #include "freertos_includes.h"
 
-const uint32_t notificationValue = LOAD_SHEDDER_NOTIFICATION;
+const uint32_t loadShedderNotificationValue = LOAD_SHEDDER_NOTIFICATION;
 #define LOAD_SHEDDER_TASK_TIMEOUT 20
 #define TIMER_START_STOP_WAIT_TIME 10
 
@@ -56,7 +56,7 @@ int initLoadShedder(void)
 void shedLoad(bool isShed)
 {
     xQueueSend(shedReconnectQ, (void *)&isShed, portMAX_DELAY);
-    BaseType_t result = xQueueSend(loadControlNotifyQ, (void *)&notificationValue, LOAD_SHEDDER_TASK_TIMEOUT);
+    BaseType_t result = xQueueSend(loadControlNotifyQ, (void *)&loadShedderNotificationValue, LOAD_SHEDDER_TASK_TIMEOUT);
     if (result == errQUEUE_FULL)
     {
         printf("load shed update fail as loadControllNotifyQ is full\n");

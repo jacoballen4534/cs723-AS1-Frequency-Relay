@@ -2,3 +2,6 @@
 /Build/**/*.o
 /Build/**/*.d
 /Build/*.exe
+
+# Mock LCD stream.
+/Build/null
