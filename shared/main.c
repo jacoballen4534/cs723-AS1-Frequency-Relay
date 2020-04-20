@@ -80,7 +80,7 @@ void initSharedVars(void)
 		shutDown();
 	}
 
-	shedReconnectQ = xQueueCreate(SHED_RECONNECT_Q_LENGTH, sizeof(int));
+	shedReconnectQ = xQueueCreate(SHED_RECONNECT_Q_LENGTH, sizeof(ShedRequest));
 	if (shedReconnectQ == 0)
 	{
 		fputs("Could not create shedReconnectQ queue", stderr);

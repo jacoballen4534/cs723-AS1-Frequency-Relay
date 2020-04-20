@@ -84,13 +84,7 @@ int initUserInput(void)
 		shutDown();
 	}
 	alt_up_ps2_clear_fifo(keyboard_device);
-	keyboard_device->timeout = 2000000;
-	printf("Device type:%d\n", keyboard_device->device_type);
-	//alt_up_ps2_init(keyboard_device);
-	keyboard_device->device_type = 1;
-	unsigned char byte1;
-	while(alt_up_ps2_read_data_byte(keyboard_device, &byte1)!=0);
-	printf("Device type:%d\n", keyboard_device->device_type);
+	alt_up_ps2_init(keyboard_device);
 
 #ifdef __SIMULATION__
 	initMockKeyboard(keyboard_device);

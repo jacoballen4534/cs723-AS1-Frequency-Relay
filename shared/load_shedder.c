@@ -53,9 +53,10 @@ int initLoadShedder(void)
     return 0;
 }
 
-void shedLoad(bool isShed)
+void shedLoad(bool isShed, TickType_t timestamp)
 {
-    xQueueSend(shedReconnectQ, (void *)&isShed, portMAX_DELAY);
+    ShedRequest sr = {isShed, timestamp};
+    xQueueSend(shedReconnectQ, (void *)&sr, portMAX_DELAY);
     BaseType_t result = xQueueSend(loadControlNotifyQ, (void *)&loadShedderNotificationValue, LOAD_SHEDDER_TASK_TIMEOUT);
     if (result == errQUEUE_FULL)
     {
@@ -69,10 +70,10 @@ void loadShedTick(FreqReading fr, enum State *state)
     {
     case IDLE:
         if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))
-        {
+        {   
             (*state) = SHED;
             printf("_fsm,%d\n", (*state));
-            shedLoad(true);
+            shedLoad(true, fr.timestamp);
             xTimerStart(shedTimer, TIMER_START_STOP_WAIT_TIME);
         }
         break;
@@ -80,7 +81,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         if (timerOverflow)
         {
             timerOverflow = false;
-            shedLoad(true);
+            shedLoad(true, 0);
         }
         if ((fr.freq > freqThresh) && (fr.RoC < rocThresh))
         {
@@ -97,7 +98,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         if (timerOverflow)
         {
             timerOverflow = false;
-            shedLoad(false);
+            shedLoad(false, 0);
         }
 
         if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))

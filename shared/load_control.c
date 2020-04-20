@@ -14,6 +14,9 @@ extern SemaphoreHandle_t xSwitchMutex;
 bool allConnected = false;
 QueueHandle_t loadControlNotifyQ;
 QueueHandle_t shedReconnectQ;
+float firstShedLatency = 0.0;
+
+
 /////////////////////////////////////////
 int8_t shedCount = 0;
 // TODO: Add mutex. Does this get its own mutex meaning updateLoadStatus will need to acquire two mutexes? or 1 mutex to cover loadStatus and xSwitchMutex
@@ -84,13 +87,17 @@ void vLoadControlTask(void *pvParameters)
         else if (notifySource == LOAD_SHEDDER_NOTIFICATION)
         {
             //receive queue values, then update loads
-            bool isShed;
+            ShedRequest shedRequest;
             uint8_t switchedOffCnt = getSwitchedOffCount();
-            while(xQueueReceive(shedReconnectQ, (void *)&isShed, 0))
+            while(xQueueReceive(shedReconnectQ, (void *)&shedRequest, 0))
             {
-                if(isShed) shedCount++;
+                if(shedRequest.isShed) shedCount++;
                 else shedCount--;
                 
+                if (shedRequest.timestamp != 0) // Ignore requests that are not the initial shed
+                {
+	                firstShedLatency = (float)(xTaskGetTickCount() - shedRequest.timestamp) / (float)portTICK_PERIOD_MS;
+                }
                 if(shedCount <= 0) shedCount = 0;
                 else if (shedCount > (NUM_LOADS - switchedOffCnt)) shedCount = (NUM_LOADS - switchedOffCnt);
 

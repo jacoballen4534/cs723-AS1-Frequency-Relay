@@ -92,6 +92,8 @@ void vDisplayOutputTask(void *pvParameters)
         printf("_rth,%.3lf\n", rocThresh);
         xSemaphoreGive(xThreshMutex);
 
+        printf("_lt,%.3f\n", firstShedLatency); //FIXME: Mutex guard
+
         //update LCD (keyboard input buffer?)
         if (newUserInputValue)
         {

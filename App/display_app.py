@@ -44,7 +44,7 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 
 class ReadInput(threading.Thread):
     def run(self):
-        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested, frequencyThreshold, rocThreshold
+        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested, frequencyThreshold, rocThreshold, shedLatency
         try:
             for line in sys.stdin:
                 if ("_fr," in line):
@@ -69,11 +69,14 @@ class ReadInput(threading.Thread):
                 elif("_rth," in line):
                     [_, key] = line.split(',')
                     rocThreshold = float(key)
+                elif("_lt," in line):
+                    [_, key] = line.split(',')
+                    shedLatency = float(key)
                 elif("[2J" in line):
                     [_, lcdDisplay] = line.split("J")
                     print("LCD - " + lcdDisplay)
-                elif(len(line) > 1):
-                    print(line)
+                # elif(len(line) > 1):
+                #     print(line)
         except ValueError as e:
             sys.exit()
 

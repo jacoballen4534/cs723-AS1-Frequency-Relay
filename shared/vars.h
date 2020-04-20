@@ -40,6 +40,15 @@ extern QueueHandle_t freqDataQ;
 #define SHED_RECONNECT_Q_LENGTH 30
 extern QueueHandle_t shedReconnectQ;
 
+typedef struct ShedRequest
+{
+	bool isShed;
+	TickType_t timestamp;
+} ShedRequest;
+
+extern float firstShedLatency;
+
+
 #define INPUT_Q_LENGTH 30
 extern QueueHandle_t inputQ;
 
