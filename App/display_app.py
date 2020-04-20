@@ -1,3 +1,4 @@
+import pygame
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
 import sys
@@ -33,6 +34,28 @@ frequencyThreshold = 0
 rocThreshold = 0
 
 data_lock = threading.RLock()
+
+
+def initLCD(chars, lines):
+    global screen
+    global myfont
+    pygame.init()
+    size = [12*chars, 20*lines]
+    screen = pygame.display.set_mode(size)
+    pygame.display.set_caption("Mock LCD")
+    myfont = pygame.font.SysFont("monospace", 20)
+
+
+def drawLCD(args):
+    i = 0
+    global screen
+    global myfont
+    screen.fill((0, 0, 0))  # erase screen contents
+    while(i < len(args)):
+        line = myfont.render(args[i], 2, (255, 255, 0))
+        screen.blit(line, (0, 20*i))
+        i += 1
+    pygame.display.flip()
 
 
 def draw_figure(canvas, figure, loc=(0, 0)):
@@ -74,7 +97,9 @@ class ReadInput(threading.Thread):
                     shedLatency = float(key)
                 elif("[2J" in line):
                     [_, lcdDisplay] = line.split("J")
-                    print("LCD - " + lcdDisplay)
+                    # print("LCD - " + lcdDisplay)
+                    drawLCD([lcdDisplay])
+
                 # elif(len(line) > 1):
                 #     print(line)
         except ValueError as e:
@@ -84,6 +109,7 @@ class ReadInput(threading.Thread):
 def main():
     global freq_q, roc_q, ts_q
     print("ENTERED PYTHON APP\r\n")
+    initLCD(16, 2)
     bg_col = sg.theme_background_color()
     t = ReadInput()
     #t.setDaemon(True)
