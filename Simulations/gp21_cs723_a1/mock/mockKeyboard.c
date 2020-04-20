@@ -104,6 +104,7 @@ void mockKeyboardInput(void *pvParameters)
 				if (keyboard_isr_handler)
 				{
 					(*keyboard_isr_handler)(keyboard_context, 0);
+					(*keyboard_isr_handler)(keyboard_context, 0); //real ps2 keyboard duplicates for press/release
 				}
 				else
 				{
