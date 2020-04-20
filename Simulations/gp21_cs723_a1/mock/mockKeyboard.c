@@ -157,7 +157,7 @@ void pushButtonHandler(int button)
 int decode_scancode(alt_up_ps2_dev *ps2, KB_CODE_TYPE *decode_mode, alt_u8 *buf, char *ascii)
 {
 	*decode_mode = KB_ASCII_MAKE_CODE;
-	*buf = (alt_u8)ps2->pressedKeyAsciiValue;
+	*buf = 0;
 	*ascii = (char)ps2->pressedKeyAsciiValue;
 	return 0;
 }
