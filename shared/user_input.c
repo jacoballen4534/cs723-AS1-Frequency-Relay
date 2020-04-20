@@ -123,7 +123,7 @@ void keyboard_isr(void *context, alt_u32 id)
 	//translate backspace and enter to ascii since this isn't handled above
 	if(key == 0x5A) ascii = '\n';
 	else if (key == 0x66) ascii = 8;
-	printf("Decode mode: %d\n, key: %d\n", decode_mode, key);
+
 	if(decode_mode == KB_ASCII_MAKE_CODE || decode_mode == KB_BINARY_MAKE_CODE)
 	{
 		if(readyToReceive)

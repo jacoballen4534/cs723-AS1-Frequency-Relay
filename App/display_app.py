@@ -1,3 +1,5 @@
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
 import sys
 import PySimpleGUI as sg
 import threading
@@ -8,8 +10,6 @@ import os
 import warnings
 warnings.filterwarnings("ignore")
 
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
-from matplotlib.figure import Figure
 
 NUM_POINTS = 2000
 NUM_OF_SWITCHES = 10

@@ -29,7 +29,6 @@ void shutDown(void);
 
 int main(int argc, char *argv[], char *envp[])
 {
-	initUserInput();
 	initSharedVars();
 
 #ifdef __SIMULATION__
@@ -38,6 +37,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	// // Initialise all tasks
 	initFrequencyAnalyser();
+	initUserInput();
 	initWallSwitches();
 	initLoadControl();
 	initDisplay();
