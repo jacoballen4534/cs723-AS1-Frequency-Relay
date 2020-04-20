@@ -37,6 +37,7 @@ int initDisplay(void)
         shutDown();
     }
 
+
     return 0;
 }
 

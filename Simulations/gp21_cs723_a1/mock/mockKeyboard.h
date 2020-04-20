@@ -36,6 +36,7 @@ typedef struct alt_up_ps2_dev
 
 alt_up_ps2_dev *alt_up_ps2_open_dev(const char *name);
 void alt_up_ps2_clear_fifo(alt_up_ps2_dev *ps2);
+void alt_up_ps2_init(alt_up_ps2_dev* ps2);
 void initMockKeyboard(alt_up_ps2_dev *keyboard_device);
 void mockKeyboardInput(void *pvParameters);
 void wallSwitchHandler();

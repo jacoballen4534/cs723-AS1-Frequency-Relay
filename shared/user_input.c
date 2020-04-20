@@ -36,6 +36,7 @@
 //  UserInputTask -> KeyToggled -> LoadControlTask
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "taskMacros.h"
 #include "freertos_includes.h"
 #include "vars.h"
@@ -77,18 +78,24 @@ SemaphoreHandle_t xUserInputBufferMutex;
 int initUserInput(void)
 {
 	alt_up_ps2_dev *keyboard_device = alt_up_ps2_open_dev(PS2_NAME);
-
 	if (keyboard_device == NULL)
 	{
 		fputs("can't find PS/2 device\n", stderr);
 		shutDown();
 	}
+	alt_up_ps2_clear_fifo(keyboard_device);
+	keyboard_device->timeout = 2000000;
+	printf("Device type:%d\n", keyboard_device->device_type);
+	//alt_up_ps2_init(keyboard_device);
+	keyboard_device->device_type = 1;
+	unsigned char byte1;
+	while(alt_up_ps2_read_data_byte(keyboard_device, &byte1)!=0);
+	printf("Device type:%d\n", keyboard_device->device_type);
 
 #ifdef __SIMULATION__
 	initMockKeyboard(keyboard_device);
 #endif
 
-	alt_up_ps2_clear_fifo(keyboard_device);
 	// register the PS/2 interrupt
 	alt_irq_register(PS2_IRQ, keyboard_device, keyboard_isr);
 
@@ -112,17 +119,29 @@ int initUserInput(void)
 	return 0;
 }
 
+bool readyToReceive = false;
 void keyboard_isr(void *context, alt_u32 id)
 {
+	//because this ISR is triggered three times per keypress (MAKE, BREAK, MAKE), decode_scancode does not work as expected
+	//we will skip every other valid MAKE to account for this.
+
 	status = decode_scancode(context, &decode_mode, &key, &ascii);
-	printf("Decode mode: %d\n", decode_mode);
-	if (status == 0 && decode_mode == KB_ASCII_MAKE_CODE) //success
+	//translate backspace and enter to ascii since this isn't handled above
+	if(key == 0x5A) ascii = '\n';
+	else if (key == 0x66) ascii = 8;
+	printf("Decode mode: %d\n, key: %d\n", decode_mode, key);
+	if(decode_mode == KB_ASCII_MAKE_CODE || decode_mode == KB_BINARY_MAKE_CODE)
 	{
-		BaseType_t queueSendStatus = xQueueSendFromISR(inputQ, (void *)&ascii, NULL);
-		if (queueSendStatus != pdTRUE)
+		if(readyToReceive)
 		{
-			printf("inputQ is full (keyboard isr)\n");
+			readyToReceive = false;
+			BaseType_t queueSendStatus = xQueueSendFromISR(inputQ, (void *)&ascii, NULL);
+			if (queueSendStatus != pdTRUE)
+			{
+				printf("inputQ is full (keyboard isr)\n");
+			}
 		}
+		else readyToReceive = true;
 	}
 }
 
@@ -146,7 +165,7 @@ void vUserInputTask(void *pvParameters)
 	while (1)
 	{
 		xQueueReceive(inputQ, (void *)&input, portMAX_DELAY);
-
+		printf("Received char: %d\n", input);
 		switch (input)
 		{
 		case PUSH_BUTTON_SPECIAL_VALUE: // Toggle maintainence mode

@@ -29,15 +29,15 @@ void shutDown(void);
 
 int main(int argc, char *argv[], char *envp[])
 {
+	initUserInput();
 	initSharedVars();
 
 #ifdef __SIMULATION__
 	initMockFrequencyRelay();
 #endif
 
-	// Initialise all tasks
+	// // Initialise all tasks
 	initFrequencyAnalyser();
-	initUserInput();
 	initWallSwitches();
 	initLoadControl();
 	initDisplay();

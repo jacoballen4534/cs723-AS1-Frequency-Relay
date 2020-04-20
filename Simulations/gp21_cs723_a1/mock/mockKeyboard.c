@@ -59,6 +59,11 @@ void alt_up_ps2_clear_fifo(alt_up_ps2_dev *ps2)
 	return;
 }
 
+void alt_up_ps2_init(alt_up_ps2_dev* ps2)
+{
+	return;
+}
+
 void initMockKeyboard(alt_up_ps2_dev *keyboard_device)
 {
 	BaseType_t taskStatus;
