@@ -49,7 +49,7 @@
 #endif
 
 #define USER_INPUT_BUFFER_BLOCK_TIME 10
-#define PUSH_BUTTON_SPECIAL_VALUE 250
+#define PUSH_BUTTON_SPECIAL_VALUE -100
 #define USER_INPUT_NOTIFY_LOAD_CONTROL_BLOCK_TIME 5
 const char pushButtonSpecialValue = (char)250;
 const uint32_t userInputNotificationValue = USER_INPUT_NOTIFICATION;
