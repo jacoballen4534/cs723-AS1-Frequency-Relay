@@ -47,7 +47,8 @@ typedef struct ShedRequest
 } ShedRequest;
 
 extern float firstShedLatency;
-
+extern float minShedLatency;
+extern float maxShedLatency;
 
 #define INPUT_Q_LENGTH 30
 extern QueueHandle_t inputQ;
