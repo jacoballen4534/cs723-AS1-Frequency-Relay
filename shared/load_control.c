@@ -18,7 +18,7 @@ float firstShedLatency = 0.0;
 
 
 /////////////////////////////////////////
-int8_t shedCount = 0;
+uint8_t shedVal[NUM_LOADS] = {0};
 // TODO: Add mutex. Does this get its own mutex meaning updateLoadStatus will need to acquire two mutexes? or 1 mutex to cover loadStatus and xSwitchMutex
 uint8_t loadStatus[NUM_LOADS] = {0}; //the final output of the device to the loads
 //0 is ON (not shedded), 1 is OFF (shedded)
@@ -26,36 +26,51 @@ uint8_t loadStatus[NUM_LOADS] = {0}; //the final output of the device to the loa
 void vLoadControlTask(void *pvParameters);
 void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
 
-void updateLoadStatus()
-{
-    uint8_t i;
-    uint8_t shedsRemaining = shedCount;
-    for (i = 0; i < NUM_LOADS; i++)
+void shedNextLoad(bool isShed)
+{   
+    uint8_t i = 0;
+    if(isShed)
     {
-        loadStatus[i] = switchVal[i];
-        if(loadStatus[i] == 0 && shedsRemaining > 0)
+        for (i = 0; i < NUM_LOADS; i++)
         {
-            loadStatus[i] = 1;
-            shedsRemaining--;
+            printf("Evaluating number %d\n", i);
+            if(shedVal[i] == false && switchVal[i] == false)
+            {
+                printf("Shedding %d\n", i);
+                shedVal[i] = true;
+                break;
+            }
         }
-        // printf("Load %d: %d, ", i, loadStatus[i]);
+
     }
-    // printf("\r\n");
+    else
+    {
+        for (i = NUM_LOADS - 1; i >= 0; i--)
+        {
+            if(shedVal[i] && switchVal[i] == false)
+            {
+                shedVal[i] = false;
+                break;
+            }
+        }
+    }
+
+    
 }
 
-uint8_t getSwitchedOffCount() //FIXME: inefficient to recount switches constantly, keep track of when detecting switch presses
+void updateLoadStatus()
 {
-    uint8_t cnt = 0;
+    allConnected = true;
     uint8_t i;
-    for(i = 0; i < NUM_LOADS; i++)
-        if(switchVal[i]) cnt++;
-
-    return cnt;
+    for (i = 0; i < NUM_LOADS; i++)
+    {
+        if(shedVal[i]) allConnected = false;
+        loadStatus[i] = switchVal[i] | shedVal[i];
+    }
 }
 
 int initLoadControl()
 {
-    shedCount = 0;
     updateLoadStatus();
 
     BaseType_t taskStatus = xTaskCreate(vLoadControlTask, "vLoadControlTask", TASK_STACKSIZE, NULL, LOAD_CONTROL_TASK_PRIORITY, NULL);
@@ -88,20 +103,14 @@ void vLoadControlTask(void *pvParameters)
         {
             //receive queue values, then update loads
             ShedRequest shedRequest;
-            uint8_t switchedOffCnt = getSwitchedOffCount();
             while(xQueueReceive(shedReconnectQ, (void *)&shedRequest, 0))
             {
-                if(shedRequest.isShed) shedCount++;
-                else shedCount--;
+                shedNextLoad(shedRequest.isShed);
                 
                 if (shedRequest.timestamp != 0) // Ignore requests that are not the initial shed
                 {
 	                firstShedLatency = (float)(xTaskGetTickCount() - shedRequest.timestamp) / (float)portTICK_PERIOD_MS;
                 }
-                if(shedCount <= 0) shedCount = 0;
-                else if (shedCount > (NUM_LOADS - switchedOffCnt)) shedCount = (NUM_LOADS - switchedOffCnt);
-
-                allConnected = (shedCount == 0) ? true : false; //FIXME: Mutex guard
             }
 
             xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
