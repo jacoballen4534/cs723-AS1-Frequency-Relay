@@ -1,3 +1,5 @@
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
 import sys
 import PySimpleGUI as sg
 import threading
@@ -8,8 +10,6 @@ import os
 import warnings
 warnings.filterwarnings("ignore")
 
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
-from matplotlib.figure import Figure
 
 NUM_POINTS = 2000
 NUM_OF_SWITCHES = 10
@@ -28,9 +28,13 @@ ts_q = collections.deque([0]*NUM_POINTS, maxlen=NUM_POINTS)
 switchStatus = "0 "*NUM_OF_SWITCHES
 loadStatus = "0 "*NUM_OF_LOADS
 FSMState = ""
-shedLatency = 0
+currentShedLatency = 0
+averageShedLatency = 0.00  # TODO: Implament.
+minShedLatency = 0
+maxShedLatency = 0
 frequencyThreshold = 0
 rocThreshold = 0
+totalRunTime = 0
 
 data_lock = threading.RLock()
 
@@ -44,7 +48,7 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 
 class ReadInput(threading.Thread):
     def run(self):
-        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested, frequencyThreshold, rocThreshold, shedLatency
+        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested, frequencyThreshold, rocThreshold, currentShedLatency, minShedLatency, maxShedLatency
         try:
             for line in sys.stdin:
                 if ("_fr," in line):
@@ -70,8 +74,10 @@ class ReadInput(threading.Thread):
                     [_, key] = line.split(',')
                     rocThreshold = float(key)
                 elif("_lt," in line):
-                    [_, key] = line.split(',')
-                    shedLatency = float(key)
+                    keys = line.split(',')
+                    currentShedLatency = float(keys[1])
+                    minShedLatency = float(keys[2])
+                    maxShedLatency = float(keys[3])
                 elif("[2J" in line):
                     [_, lcdDisplay] = line.split("J")
                     print("LCD - " + lcdDisplay)
@@ -96,7 +102,13 @@ def main():
                                                                                                                                                  justification='left', key='loadStatusText', background_color='lavender', text_color='black')],
               [sg.Text('', size=(25, 1), font=('Helvetica', 15),
                        justification='left', pad=((45, 0), 3), key='FSMStateText', background_color='lavender', text_color='black'), sg.Text('', size=(25, 1), font=('Helvetica', 15),
-                                                                                                                                             justification='left', key='reactionTimeText', background_color='lavender', text_color='black')],
+                                                                                                                                             justification='left', key='totalUpTimeText', background_color='lavender', text_color='black')],
+              [sg.Text('', size=(25, 1), font=('Helvetica', 15),
+                       justification='left', pad=((45, 0), 3), key='currentReactionTime', background_color='lavender', text_color='black'), sg.Text('', size=(25, 1), font=('Helvetica', 15),
+                                                                                                                                                    justification='left', key='averageReactionTimeText', background_color='lavender', text_color='black')],
+              [sg.Text('', size=(25, 1), font=('Helvetica', 15),
+                       justification='left', pad=((45, 0), 3), key='minReactionTime', background_color='lavender', text_color='black'), sg.Text('', size=(25, 1), font=('Helvetica', 15),
+                                                                                                                                                justification='left', key='maxReactionTimeText', background_color='lavender', text_color='black')],
                 [sg.Button('Exit', size=(8, 1), pad=((275, 0), 3), font='Helvetica 14')]]
 
     # create the form and show it without the plot
@@ -108,7 +120,11 @@ def main():
     switchTextBox = window['switchStatusText']
     loadTextBox = window['loadStatusText']
     FSMTextBox = window['FSMStateText']
-    reactionTextBox = window['reactionTimeText']
+    totalUpTimeTextBox = window['totalUpTimeText']
+    currentReactionTextBox = window['currentReactionTime']
+    averageReactionTextBox = window['averageReactionTimeText']
+    minReactionTextBox = window['minReactionTime']
+    maxReactionTextBox = window['maxReactionTimeText']
     # draw the initial plot in the window
     fig = Figure(facecolor=bg_col)
 
@@ -151,8 +167,15 @@ def main():
         loadTextBox.update(f'Loads:        {loadStatus}')
         # Update FSM
         FSMTextBox.update(f'FSM State: {FSMState}')
-        reactionTextBox.update(
-            f'Shed Latency:             {shedLatency:>04}ms')
+        totalUpTimeTextBox.update(f'Total up time (ticks):  {ts_q[-1]}')
+        currentReactionTextBox.update(
+            f'Current Shed Latency:  {currentShedLatency:>04}ms')
+        averageReactionTextBox.update(
+            f'Ave Shed Latency:       {averageShedLatency:>04}ms')
+        minReactionTextBox.update(
+            f'Min Shed Latency:        {minShedLatency:>04}ms')
+        maxReactionTextBox.update(
+            f'Max Shed Latency:      {maxShedLatency:>04}ms')
 
     window.close()
 

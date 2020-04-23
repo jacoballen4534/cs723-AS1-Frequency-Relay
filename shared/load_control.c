@@ -15,7 +15,8 @@ bool allConnected = false;
 QueueHandle_t loadControlNotifyQ;
 QueueHandle_t shedReconnectQ;
 float firstShedLatency = 0.0;
-
+float maxShedLatency = 0.0;
+float minShedLatency = 0.0;
 
 /////////////////////////////////////////
 uint8_t shedVal[NUM_LOADS] = {0};
@@ -81,6 +82,7 @@ int initLoadControl()
 
 void vLoadControlTask(void *pvParameters)
 {
+    bool firstReading = true;
     uint32_t notifySource = 0;
     while (1)
     {
@@ -110,6 +112,16 @@ void vLoadControlTask(void *pvParameters)
                 if (shedRequest.timestamp != 0) // Ignore requests that are not the initial shed
                 {
 	                firstShedLatency = (float)(xTaskGetTickCount() - shedRequest.timestamp) / (float)portTICK_PERIOD_MS;
+
+                    if (firstShedLatency > maxShedLatency)
+                    {
+                        maxShedLatency = firstShedLatency;
+                    }
+                    if (firstShedLatency > minShedLatency || firstReading == true)
+                    {
+                        minShedLatency = firstShedLatency;
+                        firstReading = false;
+                    }
                 }
             }
 
