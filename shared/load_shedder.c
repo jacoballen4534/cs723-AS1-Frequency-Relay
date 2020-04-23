@@ -23,6 +23,7 @@ double freqThresh;
 double rocThresh;
 SemaphoreHandle_t xIsMaintenanceMutex;
 bool isMaintenance;
+bool isManaging = false; //fixme: mutex guard
 
 #define SHED_TIME_MS 500
 
@@ -72,6 +73,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))
         {   
             (*state) = SHED;
+            isManaging = true;
             printf("_fsm,%d\n", (*state));
             shedLoad(true, fr.timestamp);
             xTimerStart(shedTimer, TIMER_START_STOP_WAIT_TIME);
@@ -86,6 +88,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         if ((fr.freq > freqThresh) && (fr.RoC < rocThresh))
         {
             (*state) = RECONNECT;
+            isManaging = true;
             printf("_fsm,%d\n", (*state));
             if (xTimerReset(shedTimer, TIMER_START_STOP_WAIT_TIME) != pdPASS)
             {
@@ -104,6 +107,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))
         {
             (*state) = SHED;
+            isManaging = false;
             printf("_fsm,%d\n", (*state));
             if (xTimerReset(shedTimer, TIMER_START_STOP_WAIT_TIME) != pdPASS)
             {

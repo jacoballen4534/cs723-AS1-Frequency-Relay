@@ -3,6 +3,8 @@
 #include "vars.h"
 #include "freertos_includes.h"
 
+#define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
+
 //contains task which polls switches periodically to determine values
 //communicates status of all switches to load control task via shared memory (not necessary to mutex?)
 
@@ -10,7 +12,7 @@
 uint8_t switchVal[NUM_LOADS] = {0};
 SemaphoreHandle_t xSwitchMutex = NULL;
 #define WALL_SWITCH_TASK_TIMEOUT 20
-const uint32_t wallSwitchNotificationValue = WALL_SWITCH_NOTIFICATION;
+uint32_t wallSwitchNotificationValue = WALL_SWITCH_NOTIFICATION;
 
 /////////////////////////////////////////
 
@@ -55,16 +57,19 @@ void vWallSwitchFrequencyTask(void *pvParameters)
             xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
             intToArray(switchVal, rawSwitchValue, NUM_LOADS);
             xSemaphoreGive(xSwitchMutex);
-
+            
+            uint32_t diff = previousRawSwitchValue ^ rawSwitchValue;
+            uint8_t i;
+            for(i = 0; i < NUM_LOADS; i++)
+            {
+                if (CHECK_BIT(diff, i)) 
+                {
+                    wallSwitchNotificationValue = WALL_SWITCH_NOTIFICATION + i;
+                    break;
+                }
+            }
             previousRawSwitchValue = rawSwitchValue;
-        
-            // int i;
-            // for (i = 0; i < NUM_LOADS; i++)
-            // {
-            //     printf("%u,", switchVal[i]);
-            // }
-            // printf("\r\n");
-
+            
             BaseType_t result = xQueueSend(loadControlNotifyQ, (void *)&wallSwitchNotificationValue, WALL_SWITCH_TASK_TIMEOUT);
             if (result == errQUEUE_FULL)
             {
