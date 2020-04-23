@@ -71,7 +71,7 @@ void loadShedTick(FreqReading fr, enum State *state)
     {
     case IDLE:
         if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))
-        {   
+        {
             (*state) = SHED;
             isManaging = true;
             printf("_fsm,%d\n", (*state));
@@ -107,7 +107,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))
         {
             (*state) = SHED;
-            isManaging = false;
+            isManaging = true;
             printf("_fsm,%d\n", (*state));
             if (xTimerReset(shedTimer, TIMER_START_STOP_WAIT_TIME) != pdPASS)
             {
@@ -118,6 +118,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         if (allConnected)
         {
             (*state) = IDLE;
+            isManaging = false;
             printf("_fsm,%d\n", (*state));
             xTimerStop(shedTimer, TIMER_START_STOP_WAIT_TIME);
         }
