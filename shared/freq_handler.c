@@ -56,11 +56,11 @@ void processFrequency(void *pvParameters)
 
 		//calculate RoC
 		roc = (latestFrequencySample - previousFrequencySample) * 2.0 * latestFrequencySample * previousFrequencySample / (latestFrequencySample + previousFrequencySample);
-		roc = fabs(roc);
 		previousFrequencySample = latestFrequencySample;
 
 		FreqReading fr = {latestFrequencySample, roc, ADCSamples.timestamp};
 		xQueueSend(freqDisplayQ, (void *)&fr, portMAX_DELAY);
+		fr.RoC = fabs(roc);
 		xQueueSend(freqDataQ, (void *)&fr, 0); //FIXME
 
 		//printf("%f Hz, ", fr.freq);

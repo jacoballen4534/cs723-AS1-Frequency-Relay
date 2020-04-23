@@ -58,7 +58,7 @@ void vDisplayOutputTask(void *pvParameters)
     char LCDPrintBuffer[USER_INPUT_BUFFER_LENGTH + 10] = {0}; // Allow room for Roc or Fre and terminator
     while (1)
     {
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        vTaskDelay(20 / portTICK_PERIOD_MS);
         FreqReading fr;
         insertIndex = 0;
         while (xQueueReceive(freqDisplayQ, (void *)&fr, (TickType_t)0))
@@ -67,7 +67,7 @@ void vDisplayOutputTask(void *pvParameters)
         }
 
         //TODO: Use mutex
-        printf("_lo,");
+        printf("_l,");
         for (i = 0; i < NUM_LOADS; i++)
         {
             printf("%d,", loadStatus[i]);
@@ -75,7 +75,7 @@ void vDisplayOutputTask(void *pvParameters)
         printf("\r\n");
 
         //TODO: Use mutex
-        printf("_sw,");
+        printf("_s,");
         for (i = 0; i < NUM_LOADS; i++)
         {
             printf("%u,", switchVal[i]);
@@ -84,16 +84,19 @@ void vDisplayOutputTask(void *pvParameters)
 
         for (i = 0; i < insertIndex; i++)
         {
-            printf("_fr,%.3lf,%.3lf,%u\n", displayBuffer[i].freq, displayBuffer[i].RoC, displayBuffer[i].timestamp);
+            printf("_f,%.3lf,%.3lf,%u\n", displayBuffer[i].freq, displayBuffer[i].RoC, displayBuffer[i].timestamp);
         }
+
+        vTaskDelay(20 / portTICK_PERIOD_MS);
 
         xSemaphoreTake(xThreshMutex, PRINT_MUTEX_BLOCK_TIME);
         printf("_fth,%.3lf\n", freqThresh);
-        printf("_rth,%.3lf\n", rocThresh);
+        printf("_r,%.3lf\n", rocThresh);
         xSemaphoreGive(xThreshMutex);
 
-        printf("_lt,%.3f,%.3f,%.3f\n", firstShedLatency, minShedLatency, maxShedLatency); //FIXME: Mutex guard
+        printf("_lt,%.0f,%.0f,%.0f\n", firstShedLatency, minShedLatency, maxShedLatency); //FIXME: Mutex guard
 
+        vTaskDelay(20 / portTICK_PERIOD_MS);
         //update LCD (keyboard input buffer?)
         if (newUserInputValue)
         {

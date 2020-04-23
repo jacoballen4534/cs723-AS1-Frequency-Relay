@@ -110,7 +110,7 @@ void initSharedVars(void)
 void shutDown(void)
 {
 	vTaskSuspendAll();
-	printf("_quit\n");
+	printf("_q\n");
 	fflush(stdin);
 #ifdef __SIMULATION__
 	exit(1);
