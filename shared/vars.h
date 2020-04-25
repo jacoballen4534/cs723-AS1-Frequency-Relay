@@ -23,7 +23,7 @@ typedef enum
 	Roc
 } UpdateType;
 
-#define NUM_LOADS 10
+#define NUM_LOADS 8
 
 #define NEW_FREQ_Q_LENGTH 20
 extern QueueHandle_t newFreqQ;

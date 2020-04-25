@@ -192,6 +192,8 @@ int alt_irq_register(alt_u32 id, void *context, void (*handler)(void *, alt_u32)
 	return 0;
 }
 
+void IOWR_ALTERA_AVALON_PIO_DATA(unsigned int base, unsigned int data) {}
+
 void IOWR_8DIRECT(int base, int offset, int data) {}
 void IOWR_16DIRECT(int base, int offset, int data) {}
 void IOWR_32DIRECT(int base, int offset, int data) {}

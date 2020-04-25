@@ -13,6 +13,10 @@
 #define PUSH_BUTTON_BASE 0x430c0
 #define PUSH_BUTTON_IRQ 1
 
+#define RED_LEDS_BASE 0x43060
+#define GREEN_LEDS_BASE 0x43080
+
+
 #define CHARACTER_LCD_NAME "null", "w"); \
     LCD = stdout;                        \
     fprintf(LCD

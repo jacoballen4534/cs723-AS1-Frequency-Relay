@@ -74,6 +74,34 @@ void shedNextLoad(bool isShed)
     }
 }
 
+uint32_t arrayToInt(uint8_t* in, uint8_t len)
+{
+    uint32_t out = 0U;
+    uint8_t i;
+    for(i = 0; i < len; i++)
+    {
+        if(in[i] == true)
+            out |= (1U << i);
+    }
+    return out;
+}
+
+void updateLEDs()
+{
+    //update red LEDs to load status
+    IOWR_ALTERA_AVALON_PIO_DATA(RED_LEDS_BASE, arrayToInt(loadStatus, NUM_LOADS));
+
+    //because we consider all switched off loads to be 'shedded' as well, we need to
+    //find the subset of shedded loads which don't also have the switch turned on
+    uint8_t i;
+    uint8_t sheddedOnly[NUM_LOADS] = {0};
+    for(i = 0; i < NUM_LOADS; i++)
+    {
+        sheddedOnly[i] = shedVal[i] & switchVal[i];
+    }
+    IOWR_ALTERA_AVALON_PIO_DATA(GREEN_LEDS_BASE, arrayToInt(sheddedOnly, NUM_LOADS));
+}
+
 void updateLoadStatus()
 {
     allConnected = true;
@@ -84,6 +112,7 @@ void updateLoadStatus()
         loadStatus[i] = switchVal[i] & (shedVal[i] ^ (1U));
         if(shedVal[i] == true) allConnected = false; //if the load is shed even though the switch is up, we're not idle yet
     }
+    updateLEDs();
 }
 
 int initLoadControl()

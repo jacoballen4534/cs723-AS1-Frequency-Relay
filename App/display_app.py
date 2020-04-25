@@ -13,8 +13,8 @@ warnings.filterwarnings("ignore")
 
 NUM_POINTS = 1000
 NUM_ROC_POINTS = 100
-NUM_OF_SWITCHES = 10
-NUM_OF_LOADS = 10
+NUM_OF_SWITCHES = 8
+NUM_OF_LOADS = 8
 
 quitRequested = False
 

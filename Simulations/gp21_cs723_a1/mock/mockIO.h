@@ -13,6 +13,7 @@ unsigned int IORD(int base, int regnum);
 void IOWR(int base, int regnum, unsigned int data);
 
 int alt_irq_register(alt_u32 id, void *context, void (*handler)(void *, alt_u32));
+void IOWR_ALTERA_AVALON_PIO_DATA(unsigned int base, unsigned int data);
 
 void IOWR_8DIRECT(int base, int offset, int data);
 void IOWR_16DIRECT(int base, int offset, int data);
