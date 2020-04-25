@@ -23,7 +23,7 @@ float minShedLatency = 0.0;
 uint8_t shedVal[NUM_LOADS] = {0};
 // TODO: Add mutex. Does this get its own mutex meaning updateLoadStatus will need to acquire two mutexes? or 1 mutex to cover loadStatus and xSwitchMutex
 uint8_t loadStatus[NUM_LOADS] = {0}; //the final output of the device to the loads
-//0 is ON (not shedded), 1 is OFF (shedded)
+//0 is OFF (shedded), 1 is ON ( not shedded)
 
 
 
@@ -46,7 +46,7 @@ void shedNextLoad(bool isShed)
                 shedVal[i] = true;
                 //if we're tying to disable a load, but it is already manually disabled
                 //also mark all subsequent manually switched off loads as shed to 'skip' over them
-                while(switchVal[i] == true && i < NUM_LOADS-2)
+                while(switchVal[i] == false && i < NUM_LOADS-2)
                 {
                     shedVal[i+1] = true;
                     i++;
@@ -63,7 +63,7 @@ void shedNextLoad(bool isShed)
             if(shedVal[i])
             {
                 shedVal[i] = false;
-                while(switchVal[i] == true && i >= 1)
+                while(switchVal[i] == false && i >= 1)
                 {
                     shedVal[i-1] = false;
                     i--;
@@ -81,8 +81,8 @@ void updateLoadStatus()
 
     for (i = 0; i < NUM_LOADS; i++)
     {
-        if(shedVal[i]) allConnected = false;
-        loadStatus[i] = switchVal[i] | shedVal[i];
+        loadStatus[i] = switchVal[i] & (shedVal[i] ^ (1U));
+        if(shedVal[i] == true) allConnected = false; //if the load is shed even though the switch is up, we're not idle yet
     }
 }
 
@@ -115,7 +115,7 @@ void vLoadControlTask(void *pvParameters)
             //read switch vals and update loads
             xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
             uint8_t switchIndex = notifySource - WALL_SWITCH_NOTIFICATION;
-            if(isManaging && switchVal[switchIndex] == false)
+            if(isManaging && switchVal[switchIndex] == true)
             {
                 shedVal[switchIndex] = true;
             }
