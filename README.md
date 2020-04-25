@@ -1,3 +1,11 @@
+## Assumptions Made
+ - The brief states that while the relay is managing a load, loads can be manually turned off but not back on. 
+   We assume that enabling the switch during management will still allow the relay to manage that load during this reconnect cycle.
+   If the relay has already skipped this load and proceeded to re-enabling lower priority loads, the relay will return to re-enable this load after the next 500ms tick due to the higher priority.
+ - When disabling loads, the switches take precedence over the relay. Loads disabled manually will not be reflected in the green LED output representing management, even if the switch is disabled after the load has been managed. (If the switch is re-enabled, it will again be considered managed by the load)
+
+##FIXME: Following setup instructions are outdated. I think it's appopriate that we have a few .bat files the markers can choose from to click rather than have them touch a console at all.
+
 # Setting Up The Files
 
 1. Create a folder for the source files to be located.  
