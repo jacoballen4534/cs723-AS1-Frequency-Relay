@@ -57,6 +57,10 @@ extern QueueHandle_t inputQ;
 #define USER_INPUT_NOTIFICATION 1
 #define LOAD_SHEDDER_NOTIFICATION 2
 
+#define PUSH_BUTTON_SPECIAL_VALUE -100
+
+
+
 typedef struct FreqReading
 {
 	double freq;
@@ -77,6 +81,8 @@ extern double freqThresh;
 extern double rocThresh;
 
 #define USER_INPUT_BUFFER_LENGTH 5
+#define USER_INPUT_BUFFER_BLOCK_TIME 10
+#define USER_INPUT_NOTIFY_LOAD_CONTROL_BLOCK_TIME 5
 extern SemaphoreHandle_t xUserInputBufferMutex;
 extern uint16_t userInputBufferIndex;
 extern char userInputBuffer[USER_INPUT_BUFFER_LENGTH + 1]; // Allow a /0 to be put on the end

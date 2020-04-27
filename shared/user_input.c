@@ -48,9 +48,6 @@
 #include "altera_up_ps2_keyboard.h"
 #endif
 
-#define USER_INPUT_BUFFER_BLOCK_TIME 10
-#define PUSH_BUTTON_SPECIAL_VALUE -100
-#define USER_INPUT_NOTIFY_LOAD_CONTROL_BLOCK_TIME 5
 const char pushButtonSpecialValue = (char)250;
 const uint32_t userInputNotificationValue = USER_INPUT_NOTIFICATION;
 
@@ -98,10 +95,10 @@ int initUserInput(void)
 	// Setup push button
 
 	// clears the edge capture register. Writing 1 to bit clears pending interrupt for corresponding button.
-	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSH_BUTTON_BASE, 0x0001);
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSH_BUTTON_BASE, 0x0004);
 
-	// enable interrupts for all buttons
-	IOWR_ALTERA_AVALON_PIO_IRQ_MASK(PUSH_BUTTON_BASE, 0x0001);
+	// enable interrupts for button 3
+	IOWR_ALTERA_AVALON_PIO_IRQ_MASK(PUSH_BUTTON_BASE, 0x0004);
 
 	// register the ISR
 	alt_irq_register(PUSH_BUTTON_IRQ, NULL, button_isr);
@@ -149,7 +146,7 @@ void button_isr(void *context, alt_u32 id)
 	}
 
 	// clears the edge capture register
-	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSH_BUTTON_BASE, 0x0001);
+	IOWR_ALTERA_AVALON_PIO_EDGE_CAP(PUSH_BUTTON_BASE, 0x0004);
 }
 
 void vUserInputTask(void *pvParameters)

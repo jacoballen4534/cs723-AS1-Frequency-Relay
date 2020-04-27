@@ -67,6 +67,16 @@ void shedLoad(bool isShed, TickType_t timestamp)
 
 void loadShedTick(FreqReading fr, enum State *state)
 {
+    //since we want to abort this function if in maintenance, make sure the mutex is released
+    xSemaphoreTake(xIsMaintenanceMutex, USER_INPUT_BUFFER_BLOCK_TIME);
+    bool localMaintenance = isMaintenance;
+    xSemaphoreGive(xIsMaintenanceMutex);
+
+    if(localMaintenance && (*state) == IDLE) //only enter maintenance mode from IDLE
+    {
+        return;
+    }
+
     switch (*state)
     {
     case IDLE:
