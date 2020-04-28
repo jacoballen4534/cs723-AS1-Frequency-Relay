@@ -1,5 +1,7 @@
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
+from matplotlib.ticker import (AutoMinorLocator, MultipleLocator)
+from numpy import linspace
 import sys
 import PySimpleGUI as sg
 import threading
@@ -15,6 +17,9 @@ NUM_POINTS = 1000
 NUM_ROC_POINTS = 100
 NUM_OF_SWITCHES = 8
 NUM_OF_LOADS = 8
+TIMESPAN = 10000
+ROC_TIMESPAN = 2000
+
 
 quitRequested = False
 
@@ -24,7 +29,7 @@ FSMDecoder = {
     '2': 'RECONNECT'
 }
 freq_q = collections.deque([0]*NUM_POINTS, maxlen=NUM_POINTS)
-roc_q = collections.deque([0]*NUM_POINTS, maxlen=NUM_ROC_POINTS)
+roc_q = collections.deque([0]*NUM_ROC_POINTS, maxlen=NUM_ROC_POINTS)
 ts_q = collections.deque([0]*NUM_POINTS, maxlen=NUM_POINTS)
 switchStatus = "0 "*NUM_OF_SWITCHES
 loadStatus = "0 "*NUM_OF_LOADS
@@ -93,6 +98,18 @@ class ReadInput(threading.Thread):
             sys.exit()
 
 
+def fixed_aspect_ratio(ratio, ax):
+    '''
+    Set a fixed aspect ratio on matplotlib plots 
+    regardless of axis units
+    '''
+    xvals,yvals = ax.get_xlim(),ax.get_ylim()
+
+    xrange = xvals[1]-xvals[0]
+    yrange = yvals[1]-yvals[0]
+    ax.set_aspect(ratio*(xrange/yrange), adjustable='box')
+
+
 def main():
     global freq_q, roc_q, ts_q
     print("ENTERED PYTHON APP\r\n")
@@ -144,13 +161,13 @@ def main():
     fig = Figure(facecolor=bg_col)
     fig.set_size_inches((10, 4))
     ax = fig.add_subplot(121)
-    ax.set_xlabel("Time (ticks)", family='monospace')
+    ax.set_xlabel("Time (ms)", family='monospace')
     ax.set_ylabel("Freq (Hz)", family='monospace')
     ax.set_ylim([46.0, 52.0])
     ax.grid()
 
     roc = fig.add_subplot(122)
-    roc.set_xlabel("Time (ticks)", family='monospace')
+    roc.set_xlabel("Time (ms)", family='monospace')
     roc.set_ylabel("RoC", family='monospace')
     roc.set_ylim([-30.0, 30.0])
     roc.set_xlim(0, NUM_ROC_POINTS)
@@ -168,30 +185,32 @@ def main():
             window.close()
             exit(69)
 
+        normalised_tq = [(x - ts_q[-1]) for x in ts_q]
+
         ax.cla()                    # clear the subplot
-        ax.grid()                   # draw the grid
-        ax.plot(range(NUM_POINTS), list(freq_q),  color='darkblue')
+        ax.plot(normalised_tq, list(freq_q),  color='darkblue')
         ax.set_facecolor(bg_col)
-        ax.set_xlabel("Time (ticks)")
+        ax.set_xlabel("Time (ms)")
         ax.set_ylabel("Freq (Hz)")
         ax.set_ylim([46.0, 52.0])
-        ax.set_xlim(0, NUM_POINTS)
+        ax.set_xlim(-TIMESPAN, 0)
         ax.annotate("%.2f" % freq_q[-1], (NUM_POINTS-1,
                                         freq_q[-1]), xytext=(NUM_POINTS + 6, freq_q[-1]), family='monospace')
         if (freq_q[-1] > frequencyThreshold):
             ax.axhline(y=frequencyThreshold, color='g', linestyle='-')
         else:
             ax.axhline(y=frequencyThreshold, color='r', linestyle='-')
-
+        ax.grid()                   # draw the grid
 
         roc.cla()                    # clear the subplot
-        roc.grid()                   # draw the grid
-        roc.plot(range(NUM_ROC_POINTS), list(roc_q), color='darkblue')
+        roc.plot(normalised_tq[-NUM_ROC_POINTS-1:-1], list(roc_q), color='darkblue')
         roc.set_facecolor(bg_col)
-        roc.set_xlabel("Time (ticks)")
+        roc.set_xlabel("Time (ms)")
         roc.set_ylabel("RoC")
         roc.set_ylim([-30.0, 30.0])
-        roc.set_xlim(0, NUM_ROC_POINTS)
+        roc.xaxis.set_major_locator(MultipleLocator(500))
+        roc.set_xlim(-ROC_TIMESPAN, 0)
+        roc.grid()                   # draw the grid
         if(roc_q[-1] >= 0.0):
             roc.annotate("+%.2f" % roc_q[-1], (NUM_ROC_POINTS-1,
                                           roc_q[-1]), xytext=(NUM_ROC_POINTS + 2, roc_q[-1]), family='monospace')
@@ -229,6 +248,7 @@ def main():
             f'Maintenance:      {isMaintenance}')
         lcdTextBox.update(
             f'LCD> {lcdDisplay}')
+
     window.close()
 
 if __name__ == "__main__":
