@@ -95,7 +95,7 @@ class ReadInput(threading.Thread):
                 # elif(len(line) > 1):
                 #     print(line)
         except ValueError as e:
-            sys.exit()
+            sys.exit(0)
 
 
 def fixed_aspect_ratio(ratio, ax):
@@ -113,9 +113,10 @@ def fixed_aspect_ratio(ratio, ax):
 def main():
     global freq_q, roc_q, ts_q
     print("ENTERED PYTHON APP\r\n")
+
     bg_col = sg.theme_background_color()
     t = ReadInput()
-    #t.setDaemon(True)
+    t.setDaemon(True)
     t.start()
 
     text_layout = [
@@ -180,10 +181,10 @@ def main():
         event, values = window.read(timeout=10)
         if quitRequested:
             window.close()
-            exit(69)
+            sys.exit(0)
         if event in ('Exit', None):
             window.close()
-            exit(69)
+            sys.exit(0)
 
         normalised_tq = [(x - ts_q[-1]) for x in ts_q]
 
