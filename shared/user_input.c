@@ -66,10 +66,11 @@ void vUserInputTask(void *pvParameters);
 
 uint16_t userInputBufferIndex;
 char userInputBuffer[USER_INPUT_BUFFER_LENGTH + 1] = {0}; // Allow a /0 to be put on the end
-bool newUserInputValue;								// Only update the LCD on new values to prevent flickering.
+bool newUserInputValue = true;								// Only update the LCD on new values to prevent flickering.
 UpdateType updateType;								// Indicate what value is being updated
 QueueHandle_t inputQ;
 SemaphoreHandle_t xUserInputBufferMutex;
+extern bool isManaging; //check if load shedder is acting before accepting maintenace button or not
 
 // This function initialises the process that captures keyboard inputs
 int initUserInput(void)
@@ -156,10 +157,10 @@ void vUserInputTask(void *pvParameters)
 	while (1)
 	{
 		xQueueReceive(inputQ, (void *)&input, portMAX_DELAY);
-		printf("Received char: %d\n", input);
 		switch (input)
 		{
 		case PUSH_BUTTON_SPECIAL_VALUE: // Toggle maintainence mode
+			if(isManaging) break;
 			xSemaphoreTake(xIsMaintenanceMutex, USER_INPUT_BUFFER_BLOCK_TIME);
 			isMaintenance = !isMaintenance;
 			printf("isMaintenance updated to ");
@@ -218,6 +219,7 @@ void vUserInputTask(void *pvParameters)
 			xSemaphoreTake(xUserInputBufferMutex, USER_INPUT_BUFFER_BLOCK_TIME);
 			float newValue = atof(userInputBuffer);
 			userInputBufferIndex = 0;
+			userInputBuffer[userInputBufferIndex] = 0;
 			xSemaphoreGive(xUserInputBufferMutex);
 
 			xSemaphoreTake(xThreshMutex, portMAX_DELAY);

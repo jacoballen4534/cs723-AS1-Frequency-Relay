@@ -94,7 +94,7 @@ void vDisplayOutputTask(void *pvParameters)
         printf("_r,%.3lf\n", rocThresh);
         xSemaphoreGive(xThreshMutex);
 
-        printf("_lt,%.0f,%.0f,%.0f\n", firstShedLatency, minShedLatency, maxShedLatency); //FIXME: Mutex guard
+        printf("_lt,%.0f,%.0f,%.0f,%.2f\n", firstShedLatency, minShedLatency, maxShedLatency, avgShedLatency); //FIXME: Mutex guard
 
         vTaskDelay(20 / portTICK_PERIOD_MS);
         //update LCD (keyboard input buffer?)
@@ -114,10 +114,13 @@ void vDisplayOutputTask(void *pvParameters)
 
                 fprintf(LCD, "%c%s", ESC, CLEAR_LCD_STRING);
                 fprintf(LCD, "%s\n", LCDPrintBuffer);
-
+                printf("_lcd,%s\n", LCDPrintBuffer);
                 newUserInputValue = false;
                 xSemaphoreGive(xUserInputBufferMutex);
             }
         }
+        //fixme: mutex guard
+        bool localIsMaintenance = isMaintenance; //don't lock up the mutex in a lengthy print
+        printf("_m,%u\n", localIsMaintenance);
     }
 }

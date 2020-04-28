@@ -30,13 +30,14 @@ switchStatus = "0 "*NUM_OF_SWITCHES
 loadStatus = "0 "*NUM_OF_LOADS
 FSMState = ""
 currentShedLatency = 0
-averageShedLatency = 0.00  # TODO: Implament.
-minShedLatency = 0
+averageShedLatency = 0.00
+minShedLatency = 9999.0
 maxShedLatency = 0
 frequencyThreshold = 0
 rocThreshold = 0
 totalRunTime = 0
-
+isMaintenance = 0
+lcdDisplay = ""
 data_lock = threading.RLock()
 
 
@@ -49,7 +50,7 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 
 class ReadInput(threading.Thread):
     def run(self):
-        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested, frequencyThreshold, rocThreshold, currentShedLatency, minShedLatency, maxShedLatency
+        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested, frequencyThreshold, rocThreshold, currentShedLatency, minShedLatency, maxShedLatency, averageShedLatency, isMaintenance, lcdDisplay
         try:
             for line in sys.stdin:
                 if ("_f," in line):
@@ -79,9 +80,13 @@ class ReadInput(threading.Thread):
                     currentShedLatency = float(keys[1])
                     minShedLatency = float(keys[2])
                     maxShedLatency = float(keys[3])
-                elif("[2J" in line):
-                    [_, lcdDisplay] = line.split("J")
-                    print("LCD - " + lcdDisplay)
+                    averageShedLatency = float(keys[4])
+                elif("_lcd," in line):
+                    [_, key] = line.split(",")
+                    lcdDisplay = key
+                elif("_m," in line):
+                    [_, key] = line.split(",")
+                    isMaintenance = key
                 # elif(len(line) > 1):
                 #     print(line)
         except ValueError as e:
@@ -98,11 +103,13 @@ def main():
 
     text_layout = [
         [sg.Text('', size=(25, 1), font=('System', 16),
-                justification='left', key='switchStatusText', background_color='gray', text_color='black'), sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16),
-                                                                                                                                            justification='left', key='loadStatusText', background_color='gray', text_color='black')],
+                justification='left', key='switchStatusText', background_color='gray', text_color='black'),
+                 sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16), justification='left', key='loadStatusText', background_color='gray', text_color='black'),
+                 sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16), justification='left', key='maintenanceText', background_color='gray', text_color='black')],
         [sg.Text('', size=(25, 1), font=('System', 16),
-                justification='left', key='FSMStateText', background_color='gray', text_color='black'), sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16),
-                                                                                                                                        justification='left', key='totalUpTimeText', background_color='gray', text_color='black')],
+                justification='left', key='FSMStateText', background_color='gray', text_color='black'), 
+                sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16), justification='left', key='totalUpTimeText', background_color='gray', text_color='black'),
+                sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16), justification='left', key='lcdText', background_color='black', text_color='lawn green')],
         [sg.Text('', size=(25, 1), font=('System', 16),
                 justification='left', key='currentReactionTime', background_color='gray', text_color='black'), sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16),
                                                                                                                                             justification='left', key='averageReactionTimeText', background_color='gray', text_color='black')],
@@ -130,6 +137,9 @@ def main():
     averageReactionTextBox = window['averageReactionTimeText']
     minReactionTextBox = window['minReactionTime']
     maxReactionTextBox = window['maxReactionTimeText']
+    maintenanceTextBox = window['maintenanceText']
+    lcdTextBox = window['lcdText']
+
     # draw the initial plot in the window
     fig = Figure(facecolor=bg_col)
     fig.set_size_inches((10, 4))
@@ -208,14 +218,17 @@ def main():
         FSMTextBox.update(f'FSM State: {FSMState}')
         totalUpTimeTextBox.update(f'Total uptime(ms):  {ts_q[-1]}')
         currentReactionTextBox.update(
-            f'Current Shed Latency:  {currentShedLatency:>04}ms')
+            f'Current Shed Latency:  {currentShedLatency:>03}ms')
         averageReactionTextBox.update(
-            f'Ave Shed Latency:       {averageShedLatency:>04}ms')
+            f'Avg Shed Latency:       {averageShedLatency:>03}ms')
         minReactionTextBox.update(
-            f'Min Shed Latency:        {minShedLatency:>04}ms')
+            f'Min Shed Latency:        {minShedLatency:>03}ms')
         maxReactionTextBox.update(
-            f'Max Shed Latency:      {maxShedLatency:>04}ms')
-
+            f'Max Shed Latency:      {maxShedLatency:>03}ms')
+        maintenanceTextBox.update(
+            f'Maintenance:      {isMaintenance}')
+        lcdTextBox.update(
+            f'LCD> {lcdDisplay}')
     window.close()
 
 if __name__ == "__main__":

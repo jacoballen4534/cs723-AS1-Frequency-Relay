@@ -17,7 +17,9 @@ QueueHandle_t loadControlNotifyQ;
 QueueHandle_t shedReconnectQ;
 float firstShedLatency = 0.0;
 float maxShedLatency = 0.0;
-float minShedLatency = 0.0;
+float minShedLatency = 9999.0;
+float avgShedLatency = 0.0;
+uint32_t latencyCount = 0;
 
 /////////////////////////////////////////
 uint8_t shedVal[NUM_LOADS] = {0};
@@ -168,11 +170,13 @@ void vLoadControlTask(void *pvParameters)
                     {
                         maxShedLatency = firstShedLatency;
                     }
-                    if (firstShedLatency > minShedLatency || firstReading == true)
+                    if (firstShedLatency < minShedLatency || firstReading == true)
                     {
                         minShedLatency = firstShedLatency;
                         firstReading = false;
                     }
+                    latencyCount = latencyCount + 1;
+                    avgShedLatency = avgShedLatency * (float)(latencyCount-1)/(float)latencyCount + firstShedLatency/(float)latencyCount;
                 }
             }
 

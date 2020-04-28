@@ -22,7 +22,7 @@ SemaphoreHandle_t xThreshMutex;
 double freqThresh;
 double rocThresh;
 SemaphoreHandle_t xIsMaintenanceMutex;
-bool isMaintenance;
+bool isMaintenance = false;
 bool isManaging = false; //fixme: mutex guard
 
 #define SHED_TIME_MS 500
