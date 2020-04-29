@@ -38,41 +38,26 @@ void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
 
 void shedNextLoad(bool isShed)
 {   
-    uint8_t i = 0;
-    if(isShed)
+    int8_t i = 0;
+    if(isShed == true)
     {
-        for (i = 0; i < NUM_LOADS; i++)
+        i = 0;
+        while(switchVal[i] == false || shedVal[i] == true)
         {
-            if(shedVal[i] == false)
-            {
-                shedVal[i] = true;
-                //if we're tying to disable a load, but it is already manually disabled
-                //also mark all subsequent manually switched off loads as shed to 'skip' over them
-                while(switchVal[i] == false && i < NUM_LOADS-2)
-                {
-                    shedVal[i+1] = true;
-                    i++;
-                }
-                break;
-            }
+            i++;
+            if (i >= NUM_LOADS) return;
         }
-
+        shedVal[i] = true;
     }
     else
     {
-        for (i = NUM_LOADS - 1; i >= 0; i--)
+        i = NUM_LOADS - 1;
+        while(switchVal[i] == false || shedVal[i] == false)
         {
-            if(shedVal[i])
-            {
-                shedVal[i] = false;
-                while(switchVal[i] == false && i >= 1)
-                {
-                    shedVal[i-1] = false;
-                    i--;
-                }
-                break;
-            }
+            i--;
+            if(i < 0) return;
         }
+        shedVal[i] = false;
     }
 }
 
@@ -92,16 +77,7 @@ void updateLEDs()
 {
     //update red LEDs to load status
     IOWR_ALTERA_AVALON_PIO_DATA(RED_LEDS_BASE, arrayToInt(loadStatus, NUM_LOADS));
-
-    //because we consider all switched off loads to be 'shedded' as well, we need to
-    //find the subset of shedded loads which don't also have the switch turned on
-    uint8_t i;
-    uint8_t sheddedOnly[NUM_LOADS] = {0};
-    for(i = 0; i < NUM_LOADS; i++)
-    {
-        sheddedOnly[i] = shedVal[i] & switchVal[i];
-    }
-    IOWR_ALTERA_AVALON_PIO_DATA(GREEN_LEDS_BASE, arrayToInt(sheddedOnly, NUM_LOADS));
+    IOWR_ALTERA_AVALON_PIO_DATA(GREEN_LEDS_BASE, arrayToInt(shedVal, NUM_LOADS));
 }
 
 void updateLoadStatus()
@@ -111,8 +87,10 @@ void updateLoadStatus()
 
     for (i = 0; i < NUM_LOADS; i++)
     {
+        if (switchVal[i] == false) shedVal[i] = false; //something shouldn't be shedded if the switch is done
+        if(shedVal[i] == true && switchVal[i] == true) allConnected = false; //if the load is shed even though the switch is up, we're not idle yet
+
         loadStatus[i] = switchVal[i] & (shedVal[i] ^ (1U));
-        if(shedVal[i] == true) allConnected = false; //if the load is shed even though the switch is up, we're not idle yet
     }
     updateLEDs();
 }
@@ -146,10 +124,7 @@ void vLoadControlTask(void *pvParameters)
             //read switch vals and update loads
             xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
             uint8_t switchIndex = notifySource - WALL_SWITCH_NOTIFICATION;
-            if(isManaging && switchVal[switchIndex] == true)
-            {
-                shedVal[switchIndex] = true;
-            }
+
             updateLoadStatus();
             // if load was manually UNSHED and we are MANAGING. Set the load to shedVal = 1
             xSemaphoreGive(xSwitchMutex);
