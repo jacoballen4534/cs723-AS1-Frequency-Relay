@@ -1,45 +1,9 @@
-/*
- * Will contain logic relating to the keyboard and buttons.
- * Keyboard is used to set the threshold, button used to set maintenance mode
- * Contains ISR for capturing keyboard input, and KeyboardTask for processing inputs
- */
-
-//UserInputTask
-
-//keyToggled = 1
-
-//ISR Keyboard
-/*
- * On ISR trigger, add key value to queue
- */
-
-//ISR Button
-/*
- * add special character to queue to represent button press
- */
-
-//Task
-/*
- * while(true) read from queue
- *    if(special)
- *    	 process_maintenace_button
- *    else
- *    	add to buffer
- *    	if newline character, process buffer
- * automatically yields when no data in queue
- */
-
-//Convert buffer to numerical update values
-//Update threshold in LoadShedderTask
-//	UserInputTask -> CurrentThreshold -> LoadShedder Task
-//Update maintenance mode in LoadControlTask
-//  UserInputTask -> KeyToggled -> LoadControlTask
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "taskMacros.h"
 #include "freertos_includes.h"
 #include "vars.h"
+#include "load_shedder.h"
 
 #ifdef __SIMULATION__
 #include "mockKeyboard.h"
@@ -48,29 +12,33 @@
 #include "altera_up_ps2_keyboard.h"
 #endif
 
+//Consts
 const char pushButtonSpecialValue = (char)250;
 const uint32_t userInputNotificationValue = USER_INPUT_NOTIFICATION;
 
 // Forward declare
 void shutDown(void);
+////////////////////////////////
+
 // KeyboardISR re-usable variables
 char ascii;
 int status = 0;
 unsigned char key = 0;
 KB_CODE_TYPE decode_mode;
+bool readyToReceive = false;
 
 // Local Function Prototypes
 void keyboard_isr(void *context, alt_u32 id);
 void button_isr(void *context, alt_u32 id);
 void vUserInputTask(void *pvParameters);
 
-uint16_t userInputBufferIndex;
+// Display input
+uint16_t userInputBufferIndex = 0;
 char userInputBuffer[USER_INPUT_BUFFER_LENGTH + 1] = {0}; // Allow a /0 to be put on the end
 bool newUserInputValue = true;								// Only update the LCD on new values to prevent flickering.
 UpdateType updateType;								// Indicate what value is being updated
 QueueHandle_t inputQ;
 SemaphoreHandle_t xUserInputBufferMutex;
-extern bool isManaging; //check if load shedder is acting before accepting maintenace button or not
 
 // This function initialises the process that captures keyboard inputs
 int initUserInput(void)
@@ -111,12 +79,10 @@ int initUserInput(void)
 	return 0;
 }
 
-bool readyToReceive = false;
 void keyboard_isr(void *context, alt_u32 id)
 {
 	//because this ISR is triggered three times per keypress (MAKE, BREAK, MAKE), decode_scancode does not work as expected
 	//we will skip every other valid MAKE to account for this.
-
 	status = decode_scancode(context, &decode_mode, &key, &ascii);
 	//translate backspace and enter to ascii since this isn't handled above
 	if(key == 0x5A) ascii = '\n';

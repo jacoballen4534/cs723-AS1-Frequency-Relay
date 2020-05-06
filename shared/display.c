@@ -1,15 +1,18 @@
 #include <stdio.h>
 #include "vars.h"
+#include "wall_switch.h"
+#include "user_input.h"
+#include "load_shedder.h"
+#include "load_control.h"
+
 #include "taskMacros.h"
 #include "freertos_includes.h"
 
 // Forward declare
 void shutDown(void);
+/////////////////////////
 
 #define PRINT_MUTEX_BLOCK_TIME 5
-
-extern uint8_t switchVal[NUM_LOADS];
-extern uint8_t loadStatus[NUM_LOADS];
 
 // LCD defines
 #define ESC 27
@@ -94,7 +97,8 @@ void vDisplayOutputTask(void *pvParameters)
         printf("_r,%.3lf\n", rocThresh);
         xSemaphoreGive(xThreshMutex);
 
-        printf("_lt,%.0f,%.0f,%.0f,%.2f\n", firstShedLatency, minShedLatency, maxShedLatency, avgShedLatency); //FIXME: Mutex guard
+        if (newLatency == true)
+            printf("_lt,%.0f,%.0f,%.0f,%.2f\n", firstShedLatency, minShedLatency, maxShedLatency, avgShedLatency); //FIXME: Mutex guard
 
         vTaskDelay(20 / portTICK_PERIOD_MS);
         //update LCD (keyboard input buffer?)

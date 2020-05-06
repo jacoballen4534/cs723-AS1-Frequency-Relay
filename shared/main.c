@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "vars.h"
+#include "user_input.h"
+#include "load_shedder.h"
 
 #ifdef __SIMULATION__
 // Scheduler includes
@@ -99,7 +101,6 @@ void initSharedVars(void)
 	xThreshMutex = xSemaphoreCreateMutex();
 
 	xUserInputBufferMutex = xSemaphoreCreateMutex();
-	userInputBufferIndex = 0;
 	newUserInputValue = true;
 	updateType = Frequency;
 
