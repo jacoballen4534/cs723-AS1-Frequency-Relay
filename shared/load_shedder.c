@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include "vars.h"
+#include "load_control.h"
 #include "taskMacros.h"
 #include "freertos_includes.h"
 
 const uint32_t loadShedderNotificationValue = LOAD_SHEDDER_NOTIFICATION;
+const uint32_t forceWallSwitchNotificationValue = WALL_SWITCH_RESET_NOTIFICATION;
+
 #define LOAD_SHEDDER_TASK_TIMEOUT 20
 #define TIMER_START_STOP_WAIT_TIME 10
 
@@ -13,9 +16,6 @@ enum State
     SHED = 1,
     RECONNECT = 2
 };
-
-//feedback from loadControl so we know when to enter 'idle'
-extern bool allConnected; //fixme: mutex guard
 
 TimerHandle_t shedTimer;
 SemaphoreHandle_t xThreshMutex;
@@ -62,6 +62,15 @@ void shedLoad(bool isShed, TickType_t timestamp)
     if (result == errQUEUE_FULL)
     {
         printf("load shed update fail as loadControllNotifyQ is full\n");
+    }
+}
+
+void forceUpdateSwitches()
+{
+    BaseType_t result = xQueueSend(loadControlNotifyQ, (void *)&forceWallSwitchNotificationValue, LOAD_SHEDDER_TASK_TIMEOUT);
+    if (result == errQUEUE_FULL)
+    {
+        printf("wall switch force update fail as loadControllNotifyQ is full\n");
     }
 }
 
@@ -129,6 +138,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         {
             (*state) = IDLE;
             isManaging = false;
+            forceUpdateSwitches();
             printf("_fsm,%d\n", (*state));
             xTimerStop(shedTimer, TIMER_START_STOP_WAIT_TIME);
         }

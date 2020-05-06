@@ -1,20 +1,15 @@
 #include <stdio.h>
 #include "vars.h"
+#include "wall_switch.h"
 #include "taskMacros.h"
+#include "load_shedder.h"
 #include "freertos_includes.h"
 
-//This combines the load shedder output and the wall switch output
-//in a "logical AND" fashion, and updates the relevant output LEDs
-//Controls load status LEDs, as well as load shedder LEDs
-//Can disable input from load shedder based on maintenace mode
-
 // GLOBALS
-extern uint8_t switchVal[NUM_LOADS];
-extern SemaphoreHandle_t xSwitchMutex;
-extern bool isManaging;
 bool allConnected = false;
 QueueHandle_t loadControlNotifyQ;
 QueueHandle_t shedReconnectQ;
+bool newLatency = true;
 float firstShedLatency = 0.0;
 float maxShedLatency = 0.0;
 float minShedLatency = 9999.0;
@@ -23,15 +18,10 @@ uint32_t latencyCount = 0;
 
 /////////////////////////////////////////
 uint8_t shedVal[NUM_LOADS] = {0};
+uint8_t latchedSwitches[NUM_LOADS] = {0};
 // TODO: Add mutex. Does this get its own mutex meaning updateLoadStatus will need to acquire two mutexes? or 1 mutex to cover loadStatus and xSwitchMutex
 uint8_t loadStatus[NUM_LOADS] = {0}; //the final output of the device to the loads
 //0 is OFF (shedded), 1 is ON ( not shedded)
-
-
-
-//if we're reconnecting, and we turn on a load (unshedding) which has not yet been passed, it should not turn on, but should be evaluated when reached
-//if we're reconnection, and we turn on a load that HAS been passed, it should not turn on until we reach the idle state
-
 
 void vLoadControlTask(void *pvParameters);
 void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
@@ -42,22 +32,23 @@ void shedNextLoad(bool isShed)
     if(isShed == true)
     {
         i = 0;
-        while(switchVal[i] == false || shedVal[i] == true)
+        while(latchedSwitches[i] == 0 || shedVal[i] == 1)
         {
             i++;
             if (i >= NUM_LOADS) return;
         }
-        shedVal[i] = true;
+        shedVal[i] = 1;
     }
     else
     {
         i = NUM_LOADS - 1;
-        while(switchVal[i] == false || shedVal[i] == false)
+        while((shedVal[i] == 0) && (switchVal[i] == latchedSwitches[i]))
         {
             i--;
             if(i < 0) return;
         }
-        shedVal[i] = false;
+        shedVal[i] = 0;
+        latchedSwitches[i] = switchVal[i];
     }
 }
 
@@ -87,10 +78,8 @@ void updateLoadStatus()
 
     for (i = 0; i < NUM_LOADS; i++)
     {
-        if (switchVal[i] == false) shedVal[i] = false; //something shouldn't be shedded if the switch is done
-        if(shedVal[i] == true && switchVal[i] == true) allConnected = false; //if the load is shed even though the switch is up, we're not idle yet
-
-        loadStatus[i] = switchVal[i] & (shedVal[i] ^ (1U));
+        if((shedVal[i] == 1 && switchVal[i] == 1) || (latchedSwitches[i] != switchVal[i])) allConnected = false; //if the load is shed even though the switch is up, we're not done reconnecting
+        loadStatus[i] = ((latchedSwitches[i] == 1) && (shedVal[i] == 0));
     }
     updateLEDs();
 }
@@ -124,10 +113,15 @@ void vLoadControlTask(void *pvParameters)
             //read switch vals and update loads
             xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
             uint8_t switchIndex = notifySource - WALL_SWITCH_NOTIFICATION;
-
-            updateLoadStatus();
-            // if load was manually UNSHED and we are MANAGING. Set the load to shedVal = 1
+            if(isManaging)
+            {
+                if(switchVal[switchIndex] == 0 && shedVal[switchIndex] == 1) shedVal[switchIndex] = 0; //manually turned off switches are not longer 'managed'
+                latchedSwitches[switchIndex] = latchedSwitches[switchIndex] & switchVal[switchIndex];
+            }
+            else latchedSwitches[switchIndex] = switchVal[switchIndex];
             xSemaphoreGive(xSwitchMutex);
+            updateLoadStatus();
+            
         }
         else if (notifySource == LOAD_SHEDDER_NOTIFICATION)
         {
@@ -152,10 +146,23 @@ void vLoadControlTask(void *pvParameters)
                     }
                     latencyCount = latencyCount + 1;
                     avgShedLatency = avgShedLatency * (float)(latencyCount-1)/(float)latencyCount + firstShedLatency/(float)latencyCount;
+                    newLatency = true;
                 }
             }
 
             xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
+            updateLoadStatus();
+            xSemaphoreGive(xSwitchMutex);
+        }
+        else if (notifySource == WALL_SWITCH_RESET_NOTIFICATION)
+        {
+            uint8_t i;
+            xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
+            for (i = 0; i < NUM_LOADS; i++)
+            {
+               latchedSwitches[i] = switchVal[i];
+            }
+            printf("UPDATING SWITCHES\n");
             updateLoadStatus();
             xSemaphoreGive(xSwitchMutex);
         }
