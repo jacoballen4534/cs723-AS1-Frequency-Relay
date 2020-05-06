@@ -9,7 +9,8 @@
 bool allConnected = false;
 QueueHandle_t loadControlNotifyQ;
 QueueHandle_t shedReconnectQ;
-bool newLatency = true;
+QueueHandle_t newLatencyToDisplayQ;
+QueueHandle_t newLoadStatusToDisplayQ;
 float firstShedLatency = 0.0;
 float maxShedLatency = 0.0;
 float minShedLatency = 9999.0;
@@ -75,10 +76,15 @@ void updateLoadStatus()
 {
     allConnected = true;
     uint8_t i;
+    uint8_t mailBoxNotification = 1;
 
     for (i = 0; i < NUM_LOADS; i++)
     {
         if((shedVal[i] == 1 && switchVal[i] == 1) || (latchedSwitches[i] != switchVal[i])) allConnected = false; //if the load is shed even though the switch is up, we're not done reconnecting
+
+        if (loadStatus[i] != ((latchedSwitches[i] == 1) && (shedVal[i] == 0)))
+            xQueueOverwrite(newLoadStatusToDisplayQ, (void *)&mailBoxNotification);
+
         loadStatus[i] = ((latchedSwitches[i] == 1) && (shedVal[i] == 0));
     }
     updateLEDs();
@@ -103,6 +109,7 @@ void vLoadControlTask(void *pvParameters)
 {
     bool firstReading = true;
     uint32_t notifySource = 0;
+    uint8_t mailBoxNotification = 1;
     while (1)
     {
         //will awaken when signaled by UserInputTask, LoadShedderTask or wallSwitchTask change
@@ -151,7 +158,7 @@ void vLoadControlTask(void *pvParameters)
                     }
                     latencyCount = latencyCount + 1;
                     avgShedLatency = avgShedLatency * (float)(latencyCount-1)/(float)latencyCount + firstShedLatency/(float)latencyCount;
-                    newLatency = true;
+                    xQueueOverwrite(newLatencyToDisplayQ, (void *)&mailBoxNotification);
                 }
             }
 

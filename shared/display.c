@@ -40,7 +40,6 @@ int initDisplay(void)
         shutDown();
     }
 
-
     return 0;
 }
 
@@ -58,10 +57,12 @@ void initialiseBuffer()
 void vDisplayOutputTask(void *pvParameters)
 {
     int i;
+    uint8_t mailBoxReceive;
     char LCDPrintBuffer[USER_INPUT_BUFFER_LENGTH + 10] = {0}; // Allow room for Roc or Fre and terminator
     while (1)
     {
         vTaskDelay(20 / portTICK_PERIOD_MS);
+        // ---------------------- Send frequency, roc and timestamps ------------------------
         FreqReading fr;
         insertIndex = 0;
         while (xQueueReceive(freqDisplayQ, (void *)&fr, (TickType_t)0))
@@ -69,38 +70,57 @@ void vDisplayOutputTask(void *pvParameters)
             displayBuffer[insertIndex++] = fr;
         }
 
-        //TODO: Use mutex
-        printf("_l,");
-        for (i = 0; i < NUM_LOADS; i++)
-        {
-            printf("%d,", loadStatus[i]);
-        }
-        printf("\r\n");
-
-        //TODO: Use mutex
-        printf("_s,");
-        for (i = 0; i < NUM_LOADS; i++)
-        {
-            printf("%u,", switchVal[i]);
-        }
-        printf("\r\n");
-
         for (i = 0; i < insertIndex; i++)
         {
             printf("_f,%.3lf,%.3lf,%u\n", displayBuffer[i].freq, displayBuffer[i].RoC, displayBuffer[i].timestamp);
         }
 
+        // ---------------------- Send load status ----------------------
+        //TODO: Use mutex
+        if (xQueueReceive(newLoadStatusToDisplayQ, (void *)&mailBoxReceive, (TickType_t)0))
+        {
+            printf("_l,");
+            for (i = 0; i < NUM_LOADS; i++)
+            {
+                printf("%d,", loadStatus[i]);
+            }
+            printf("\r\n");
+        }
+
+        // ---------------------- Send switch status ----------------------
+        //TODO: Use mutex
+        if (xQueueReceive(newSwitchValToDisplayQ, (void *)&mailBoxReceive, (TickType_t)0))
+        {
+            printf("_s,");
+            for (i = 0; i < NUM_LOADS; i++)
+            {
+                printf("%u,", switchVal[i]);
+            }
+            printf("\r\n");
+        }
+
         vTaskDelay(20 / portTICK_PERIOD_MS);
 
-        xSemaphoreTake(xThreshMutex, PRINT_MUTEX_BLOCK_TIME);
-        printf("_fth,%.3lf\n", freqThresh);
-        printf("_r,%.3lf\n", rocThresh);
-        xSemaphoreGive(xThreshMutex);
+        // ---------------------- Send thresholds ----------------------
 
-        if (newLatency == true)
+        if (xQueueReceive(newThresholdToDisplayQ, (void *)&mailBoxReceive, (TickType_t)0))
+        {
+            xSemaphoreTake(xThreshMutex, PRINT_MUTEX_BLOCK_TIME);
+            printf("_fth,%.3lf\n", freqThresh);
+            printf("_r,%.3lf\n", rocThresh);
+            xSemaphoreGive(xThreshMutex);
+        }
+
+        // ---------------------- Send latency ----------------------
+
+        if (xQueueReceive(newLatencyToDisplayQ, (void *)&mailBoxReceive, (TickType_t)0))
+        {
             printf("_lt,%.0f,%.0f,%.0f,%.2f\n", firstShedLatency, minShedLatency, maxShedLatency, avgShedLatency); //FIXME: Mutex guard
+        }
 
         vTaskDelay(20 / portTICK_PERIOD_MS);
+
+        // ---------------------- Send LCD ----------------------
         //update LCD (keyboard input buffer?)
         if (newUserInputValue)
         {
@@ -123,8 +143,13 @@ void vDisplayOutputTask(void *pvParameters)
                 xSemaphoreGive(xUserInputBufferMutex);
             }
         }
+
+        // ---------------------- Send maintenance status ----------------------
         //fixme: mutex guard
-        bool localIsMaintenance = isMaintenance; //don't lock up the mutex in a lengthy print
-        printf("_m,%u\n", localIsMaintenance);
+        if (xQueueReceive(newIsMaintenanceToDisplayQ, (void *)&mailBoxReceive, (TickType_t)0))
+        {
+            bool localIsMaintenance = isMaintenance; //don't lock up the mutex in a lengthy print
+            printf("_m,%u\n", localIsMaintenance);
+        }
     }
 }

@@ -72,6 +72,18 @@ void initSharedVars(void)
 	inputQ = xQueueCreate(INPUT_Q_LENGTH, sizeof(char));
 	handleQueueCreateError(inputQ, "inputQ");
 
+	newLoadStatusToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
+	handleQueueCreateError(newLoadStatusToDisplayQ, "newLoadStatusToDisplay");
+
+	newSwitchValToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
+	handleQueueCreateError(newSwitchValToDisplayQ, "newLoadStatusToDisplay");
+
+	newThresholdToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
+	handleQueueCreateError(newThresholdToDisplayQ, "newThresholdToDisplayQ");
+
+	newLatencyToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
+	handleQueueCreateError(newLatencyToDisplayQ, "newLatencyToDisplayQ");
+
 	freqThresh = 49.0;
 	rocThresh = 8.0;
 	xThreshMutex = xSemaphoreCreateMutex();
@@ -82,6 +94,8 @@ void initSharedVars(void)
 
 	xIsMaintenanceMutex = xSemaphoreCreateMutex();
 	isMaintenance = false;
+	newIsMaintenanceToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
+	handleQueueCreateError(newIsMaintenanceToDisplayQ, "newIsMaintenanceToDisplayQ");
 }
 
 void shutDown(void)

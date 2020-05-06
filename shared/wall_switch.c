@@ -14,6 +14,8 @@ SemaphoreHandle_t xSwitchMutex = NULL;
 #define WALL_SWITCH_TASK_TIMEOUT 20
 uint32_t wallSwitchNotificationValue = WALL_SWITCH_NOTIFICATION;
 
+QueueHandle_t newSwitchValToDisplayQ;
+
 /////////////////////////////////////////
 
 void vWallSwitchFrequencyTask(void *pvParameters);
@@ -48,6 +50,7 @@ void intToArray(uint8_t *buf, uint32_t input, uint32_t array_length)
 void vWallSwitchFrequencyTask(void *pvParameters)
 {
     uint32_t previousRawSwitchValue = 0;
+    uint8_t mailBoxNotification = 1;
     while (1)
     {
         uint32_t rawSwitchValue = IORD_ALTERA_AVALON_PIO_DATA(SLIDE_SWITCH_BASE);
@@ -89,6 +92,8 @@ void vWallSwitchFrequencyTask(void *pvParameters)
                 printf("wall switch update fail as loadControllNotifyQ is full\n");
                 continue; // Skip the vTaskDelay as it has allready waited WALL_SWITCH_TASK_TIMEOUT
             }
+            // Notify display task.
+            xQueueOverwrite(newSwitchValToDisplayQ, (void *)&mailBoxNotification);
         }
         vTaskDelay(WALL_SWITCH_TASK_TIMEOUT / portTICK_PERIOD_MS);
     }
