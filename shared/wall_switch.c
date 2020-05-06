@@ -18,14 +18,14 @@ QueueHandle_t newSwitchValToDisplayQ;
 
 /////////////////////////////////////////
 
-void vWallSwitchFrequencyTask(void *pvParameters);
+void vWallSwitchTask(void *pvParameters);
 void handleTaskCreateError(BaseType_t taskStatus, char *taskName);
 void intToArray(uint8_t *buf, uint32_t input, uint32_t array_length);
 
 int initWallSwitches(void)
 {
     // Start vWallSwitchFrequencyTask task
-    BaseType_t taskStatus = xTaskCreate(vWallSwitchFrequencyTask, "vWallSwitchFrequencyTask", TASK_STACKSIZE, NULL, WALL_SWITCH_TASK_PRIORITY, NULL);
+    BaseType_t taskStatus = xTaskCreate(vWallSwitchTask, "vWallSwitchFrequencyTask", TASK_STACKSIZE, NULL, WALL_SWITCH_TASK_PRIORITY, NULL);
     handleTaskCreateError(taskStatus, "vWallSwitchFrequencyTask");
 
     xSwitchMutex = xSemaphoreCreateMutex();
@@ -47,7 +47,7 @@ void intToArray(uint8_t *buf, uint32_t input, uint32_t array_length)
     }
 }
 
-void vWallSwitchFrequencyTask(void *pvParameters)
+void vWallSwitchTask(void *pvParameters)
 {
     uint32_t previousRawSwitchValue = 0;
     uint8_t mailBoxNotification = 1;

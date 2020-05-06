@@ -1,8 +1,4 @@
 //receives counts from frequency analyser and converts it into a frequency, and a running rate-of-change
-//isr writes counts to queue, task reads and does conversions
-//communicate frequencies and RoCs to load shedder over shared memory (because history not important, only latest value)
-//communicate frequencies and RoCs to display task over shared memory
-//2-deep FIFO for current and last value
 
 #include <stdio.h>
 #include <math.h>
@@ -17,7 +13,7 @@ QueueHandle_t freqDisplayQ;
 QueueHandle_t freqDataQ;
 
 // Local Function Prototypes
-void processFrequency(void *pvParameters);
+void vFrequencyHandlerTask(void *pvParameters);
 void freq_isr();
 
 // This function initialises the freq_handler tasks
@@ -27,13 +23,13 @@ int initFrequencyAnalyser(void)
 	alt_irq_register(FREQUENCY_ANALYSER_IRQ, 0, freq_isr);
 
 	// Start processFrequency task
-	BaseType_t taskStatus = xTaskCreate(processFrequency, "processFrequency", TASK_STACKSIZE, NULL, FREQ_ANALYSER_TASK_PRIORITY, NULL);
+	BaseType_t taskStatus = xTaskCreate(vFrequencyHandlerTask, "processFrequency", TASK_STACKSIZE, NULL, FREQ_ANALYSER_TASK_PRIORITY, NULL);
 	handleTaskCreateError(taskStatus, "processFrequency");
 
 	return 0;
 }
 
-void processFrequency(void *pvParameters)
+void vFrequencyHandlerTask(void *pvParameters)
 {
 	double latestFrequencySample = 0;
 	double previousFrequencySample = 0;
@@ -61,13 +57,7 @@ void processFrequency(void *pvParameters)
 		FreqReading fr = {latestFrequencySample, roc, ADCSamples.timestamp};
 		xQueueSend(freqDisplayQ, (void *)&fr, portMAX_DELAY);
 		fr.RoC = fabs(roc);
-		xQueueSend(freqDataQ, (void *)&fr, 0); //FIXME
-
-		//printf("%f Hz, ", fr.freq);
-
-		//printf("RoC %f, ", fr.RoC);
-		//printf("Tick count: %u\r\n", fr.timestamp);
-		fflush(stdout);
+		xQueueSend(freqDataQ, (void *)&fr, 0); //FIXME (why fixme?)
 	}
 }
 

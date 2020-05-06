@@ -27,17 +27,11 @@ bool isManaging = false; //fixme: mutex guard
 
 #define SHED_TIME_MS 500
 
-//Condition 1: Freq below thresh
-//Condition 2: RoC above
-
-//When condition detected, move stable -> unstable, shed one load
-//after 500 ms
-
 void vLoadShedderTask(void *pvParameters);
 
 bool timerOverflow = false; //FIXME: mutex guard
 
-void timerShedISR(TimerHandle_t xTimer)
+void timer_shed_isr(TimerHandle_t xTimer)
 {
     timerOverflow = true;
 }
@@ -45,7 +39,7 @@ void timerShedISR(TimerHandle_t xTimer)
 int initLoadShedder(void)
 {
 
-    shedTimer = xTimerCreate("shedTimer", SHED_TIME_MS / portTICK_PERIOD_MS, pdTRUE, (void *)0, timerShedISR);
+    shedTimer = xTimerCreate("shedTimer", SHED_TIME_MS / portTICK_PERIOD_MS, pdTRUE, (void *)0, timer_shed_isr);
 
     // Start vDisplayOutputTask task
     BaseType_t taskStatus = xTaskCreate(vLoadShedderTask, "vLoadShedderTask", TASK_STACKSIZE, NULL, LOAD_SHEADDER_PRIORITY, NULL);

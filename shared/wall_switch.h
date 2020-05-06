@@ -3,7 +3,6 @@
 #include "vars.h"
 
 extern uint8_t switchVal[NUM_LOADS];
-extern uint8_t loadStatus[NUM_LOADS];
 extern SemaphoreHandle_t xSwitchMutex;
 
 #endif
