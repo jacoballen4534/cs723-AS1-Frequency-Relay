@@ -86,6 +86,11 @@ void updateLoadStatus()
 
 int initLoadControl()
 {
+    uint8_t i;
+    for (i = 0; i < NUM_LOADS; i++)
+    {
+        latchedSwitches[i] = switchVal[i];
+    }
     updateLoadStatus();
 
     BaseType_t taskStatus = xTaskCreate(vLoadControlTask, "vLoadControlTask", TASK_STACKSIZE, NULL, LOAD_CONTROL_TASK_PRIORITY, NULL);
@@ -162,7 +167,6 @@ void vLoadControlTask(void *pvParameters)
             {
                latchedSwitches[i] = switchVal[i];
             }
-            printf("UPDATING SWITCHES\n");
             updateLoadStatus();
             xSemaphoreGive(xSwitchMutex);
         }
