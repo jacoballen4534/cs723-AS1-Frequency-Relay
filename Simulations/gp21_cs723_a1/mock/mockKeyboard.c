@@ -18,11 +18,10 @@ void shutDown(void);
 // Forward declare local function
 void mockKeyboardInput(void *pvParameters);
 
-// Keys z,x,c,v represent buttons 3,2,1,0 respectively. (Button 3 (left) resets the board)
-#define BUTTON_0_KEY 118
-#define BUTTON_1_KEY 99
-#define BUTTON_2_KEY 120
-#define BUTTON_3_KEY 122
+#define BUTTON_RESET_KEY (int)'v'
+#define BUTTON_1_KEY (int)'c'
+#define BUTTON_2_KEY (int)'x'
+#define BUTTON_3_KEY (int)'z'
 
 #define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 
@@ -91,7 +90,7 @@ void mockKeyboardInput(void *pvParameters)
 			{
 				wallSwitchHandler();
 			}
-			else if (keyboardInput == BUTTON_3_KEY || keyboardInput == BUTTON_2_KEY || keyboardInput == BUTTON_1_KEY || keyboardInput == BUTTON_0_KEY)
+			else if (keyboardInput == BUTTON_3_KEY || keyboardInput == BUTTON_2_KEY || keyboardInput == BUTTON_1_KEY || keyboardInput == BUTTON_RESET_KEY)
 			{
 				pushButtonHandler(keyboardInput);
 			}
@@ -130,27 +129,28 @@ void wallSwitchHandler()
 void pushButtonHandler(int button)
 {
 	// Check that interrupts are enabled and there is not interrupt allready raised to the corresponding button.
-	if (button == BUTTON_0_KEY && CHECK_BIT(buttonInterruptEnableMask, 0) && CHECK_BIT(buttonInterruptPendingMask, 0))
-	{
-		buttonInterruptPendingMask &= 0b1110;
-		(*button_isr_handler)(button_context, 0);
-		return;
-	}
-	else if (button == BUTTON_1_KEY && CHECK_BIT(buttonInterruptEnableMask, 1) && CHECK_BIT(buttonInterruptPendingMask, 1))
-	{
-		buttonInterruptPendingMask &= 0b1101;
-		(*button_isr_handler)(button_context, 0);
-		return;
-	}
-	else if (button == BUTTON_2_KEY && CHECK_BIT(buttonInterruptEnableMask, 2) && CHECK_BIT(buttonInterruptPendingMask, 2))
-	{
-		buttonInterruptPendingMask &= 0b1011;
-		(*button_isr_handler)(button_context, 0);
-		return;
-	}
-	else if (button == BUTTON_3_KEY && CHECK_BIT(buttonInterruptEnableMask, 3) && CHECK_BIT(buttonInterruptPendingMask, 3))
+	if (button == BUTTON_RESET_KEY)
 	{
 		printf("RESTART SYSTEM\n"); //TODO: implament
+		return;
+	}
+	else if (button == BUTTON_1_KEY && CHECK_BIT(buttonInterruptEnableMask, 0) && CHECK_BIT(buttonInterruptPendingMask, 0))
+	{
+		buttonInterruptPendingMask &= 0b110;
+		(*button_isr_handler)(button_context, 0);
+		return;
+	}
+	else if (button == BUTTON_2_KEY && CHECK_BIT(buttonInterruptEnableMask, 1) && CHECK_BIT(buttonInterruptPendingMask, 1))
+	{
+		buttonInterruptPendingMask &= 0b101;
+		(*button_isr_handler)(button_context, 0);
+		return;
+	}
+	else if (button == BUTTON_3_KEY && CHECK_BIT(buttonInterruptEnableMask, 2) && CHECK_BIT(buttonInterruptPendingMask, 2))
+	{
+		buttonInterruptPendingMask &= 0b011;
+		(*button_isr_handler)(button_context, 0);
+		return;
 	}
 }
 
