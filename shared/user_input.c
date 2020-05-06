@@ -40,6 +40,8 @@ bool newUserInputValue = true;								// Only update the LCD on new values to pr
 UpdateType updateType;								// Indicate what value is being updated
 QueueHandle_t inputQ;
 SemaphoreHandle_t xUserInputBufferMutex;
+QueueHandle_t newIsMaintenanceToDisplayQ;
+QueueHandle_t newThresholdToDisplayQ;
 
 // This function initialises the process that captures keyboard inputs
 int initUserInput(void)
@@ -76,6 +78,10 @@ int initUserInput(void)
 	// Start userInputTask task
 	BaseType_t taskStatus = xTaskCreate(vUserInputTask, "vUserInputTask", TASK_STACKSIZE, NULL, USER_INPUT_PRIORITY, NULL);
 	handleTaskCreateError(taskStatus, "vUserInputTask");
+
+	// Send the initial starting thresholds
+	uint8_t mailBoxNotification = 1;
+	xQueueOverwrite(newThresholdToDisplayQ, (void *)&mailBoxNotification);
 
 	return 0;
 }
@@ -121,6 +127,8 @@ void vUserInputTask(void *pvParameters)
 {
 	char input;
 	bool gotDecimalPoint = false;
+	uint8_t mailBoxNotification = 1;
+
 	while (1)
 	{
 		xQueueReceive(inputQ, (void *)&input, portMAX_DELAY);
@@ -133,6 +141,8 @@ void vUserInputTask(void *pvParameters)
 			printf("isMaintenance updated to ");
 			isMaintenance == true ? printf("true\n") : printf("false\n");
 			xSemaphoreGive(xIsMaintenanceMutex);
+			xQueueOverwrite(newIsMaintenanceToDisplayQ, (void *)&mailBoxNotification);
+
 			BaseType_t result = xQueueSend(loadControlNotifyQ, (void *)&userInputNotificationValue, USER_INPUT_NOTIFY_LOAD_CONTROL_BLOCK_TIME);
 			if (result == errQUEUE_FULL)
 			{
@@ -199,6 +209,8 @@ void vUserInputTask(void *pvParameters)
 				rocThresh = newValue;
 			}
 			xSemaphoreGive(xThreshMutex);
+
+			xQueueOverwrite(newThresholdToDisplayQ, (void *)&mailBoxNotification);
 
 			gotDecimalPoint = false;
 			newUserInputValue = true;

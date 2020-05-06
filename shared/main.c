@@ -18,6 +18,7 @@
 int initMockFrequencyRelay(void);
 #endif
 
+void handleQueueCreateError(QueueHandle_t queueStatus, char *queueName);
 int initFrequencyAnalyser(void);
 int initUserInput(void);
 int initWallSwitches(void);
@@ -37,7 +38,7 @@ int main(int argc, char *argv[], char *envp[])
 	initMockFrequencyRelay();
 #endif
 
-	// // Initialise all tasks
+	// Initialise all tasks
 	initFrequencyAnalyser();
 	initUserInput();
 	initWallSwitches();
@@ -54,47 +55,34 @@ void initSharedVars(void)
 {
 	// Creating a queue to buffer frequency readings.
 	newFreqQ = xQueueCreate(NEW_FREQ_Q_LENGTH, sizeof(AnalyserReading));
-
-	if (newFreqQ == 0)
-	{
-		fputs("Could not create newFreqQ queue", stderr);
-		shutDown();
-	}
+	handleQueueCreateError(newFreqQ, "newFreqQ");
 
 	loadControlNotifyQ = xQueueCreate(LOAD_CONTROL_NOTIFY_Q_LENGTH, sizeof(unsigned int));
-	if (loadControlNotifyQ == 0)
-	{
-		fputs("Could not create loadControlNotifyQ queue", stderr);
-		shutDown();
-	}
+	handleQueueCreateError(loadControlNotifyQ, "loadControlNotifyQ");
 
 	freqDisplayQ = xQueueCreate(FREQ_DISPLAY_Q_LENGTH, sizeof(FreqReading));
-	if (freqDisplayQ == 0)
-	{
-		fputs("Could not create freqDisplayQ queue", stderr);
-		shutDown();
-	}
+	handleQueueCreateError(freqDisplayQ, "freqDisplayQ");
 
 	freqDataQ = xQueueCreate(FREQ_DATA_Q_LENGTH, sizeof(FreqReading));
-	if (freqDataQ == 0)
-	{
-		fputs("Could not create freqDataQ queue", stderr);
-		shutDown();
-	}
+	handleQueueCreateError(freqDataQ, "freqDataQ");
 
 	shedReconnectQ = xQueueCreate(SHED_RECONNECT_Q_LENGTH, sizeof(ShedRequest));
-	if (shedReconnectQ == 0)
-	{
-		fputs("Could not create shedReconnectQ queue", stderr);
-		shutDown();
-	}
+	handleQueueCreateError(shedReconnectQ, "shedReconnectQ");
 
 	inputQ = xQueueCreate(INPUT_Q_LENGTH, sizeof(char));
-	if (inputQ == 0)
-	{
-		fputs("Could not create inputQ queue", stderr);
-		shutDown();
-	}
+	handleQueueCreateError(inputQ, "inputQ");
+
+	newLoadStatusToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
+	handleQueueCreateError(newLoadStatusToDisplayQ, "newLoadStatusToDisplay");
+
+	newSwitchValToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
+	handleQueueCreateError(newSwitchValToDisplayQ, "newLoadStatusToDisplay");
+
+	newThresholdToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
+	handleQueueCreateError(newThresholdToDisplayQ, "newThresholdToDisplayQ");
+
+	newLatencyToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
+	handleQueueCreateError(newLatencyToDisplayQ, "newLatencyToDisplayQ");
 
 	freqThresh = 49.0;
 	rocThresh = 8.0;
@@ -106,6 +94,8 @@ void initSharedVars(void)
 
 	xIsMaintenanceMutex = xSemaphoreCreateMutex();
 	isMaintenance = false;
+	newIsMaintenanceToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
+	handleQueueCreateError(newIsMaintenanceToDisplayQ, "newIsMaintenanceToDisplayQ");
 }
 
 void shutDown(void)

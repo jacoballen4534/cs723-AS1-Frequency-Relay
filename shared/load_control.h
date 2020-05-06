@@ -7,7 +7,6 @@ extern float firstShedLatency;
 extern float minShedLatency;
 extern float maxShedLatency;
 extern float avgShedLatency;
-extern bool newLatency;
 
 //feedback from loadControl so we know when to enter 'idle'
 extern bool allConnected; //fixme: mutex guard

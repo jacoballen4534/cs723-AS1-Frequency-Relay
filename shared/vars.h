@@ -14,7 +14,7 @@
 #include "queue_types.h"
 
 //Global FreeRTOS variables and defines
-
+#define MAIL_BOX_LENGTH 1
 #define NUM_LOADS 8
 
 #define NEW_FREQ_Q_LENGTH 20
@@ -32,6 +32,8 @@ extern QueueHandle_t shedReconnectQ;
 
 #define LOAD_CONTROL_NOTIFY_Q_LENGTH 30
 extern QueueHandle_t loadControlNotifyQ;
+
+extern QueueHandle_t newLoadStatusToDisplayQ;
 /********************************/
 
 #define INPUT_Q_LENGTH 30
@@ -42,6 +44,8 @@ extern QueueHandle_t inputQ;
 #define USER_INPUT_NOTIFICATION 1
 #define LOAD_SHEDDER_NOTIFICATION 2
 
+extern QueueHandle_t newSwitchValToDisplayQ;
+
 #define PUSH_BUTTON_SPECIAL_VALUE -100
 
 #define DISPLAY_BUFFER_LENGTH 50
@@ -51,5 +55,9 @@ extern QueueHandle_t inputQ;
 #define USER_INPUT_BUFFER_BLOCK_TIME 10
 #define USER_INPUT_NOTIFY_LOAD_CONTROL_BLOCK_TIME 5
 /******************************/
+
+extern QueueHandle_t newThresholdToDisplayQ;
+extern QueueHandle_t newLatencyToDisplayQ;
+extern QueueHandle_t newIsMaintenanceToDisplayQ;
 
 #endif /* SHARED_VARS_H */
