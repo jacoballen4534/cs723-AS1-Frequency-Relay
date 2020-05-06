@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "taskMacros.h"
+
 #include "freertos_includes.h"
-#include "vars.h"
 #include "load_shedder.h"
+#include "taskMacros.h"
+#include "vars.h"
 
 #ifdef __SIMULATION__
 #include "mockKeyboard.h"
