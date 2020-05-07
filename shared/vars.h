@@ -26,6 +26,9 @@ extern QueueHandle_t freqDisplayQ;
 #define FREQ_DATA_Q_LENGTH 30
 extern QueueHandle_t freqDataQ;
 
+#define TIMER_Q_LENGTH 10
+extern QueueHandle_t timerQ;
+
 /**********Load Control**********/
 #define SHED_RECONNECT_Q_LENGTH 30
 extern QueueHandle_t shedReconnectQ;

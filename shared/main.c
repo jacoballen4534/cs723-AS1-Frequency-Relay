@@ -72,6 +72,9 @@ void initSharedVars(void)
 	inputQ = xQueueCreate(INPUT_Q_LENGTH, sizeof(char));
 	handleQueueCreateError(inputQ, "inputQ");
 
+	timerQ = xQueueCreate(TIMER_Q_LENGTH, sizeof(uint8_t));
+	handleQueueCreateError(timerQ, "timerQ");
+
 	newLoadStatusToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
 	handleQueueCreateError(newLoadStatusToDisplayQ, "newLoadStatusToDisplay");
 

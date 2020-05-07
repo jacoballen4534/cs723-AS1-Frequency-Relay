@@ -19,6 +19,7 @@ enum State
 
 TimerHandle_t shedTimer;
 SemaphoreHandle_t xThreshMutex;
+QueueHandle_t timerQ;
 double freqThresh;
 double rocThresh;
 SemaphoreHandle_t xIsMaintenanceMutex;
@@ -29,16 +30,18 @@ bool isManaging = false; //fixme: mutex guard
 
 void vLoadShedderTask(void *pvParameters);
 
-bool timerOverflow = false; //FIXME: mutex guard
-
 void timer_shed_isr(TimerHandle_t xTimer)
 {
-    timerOverflow = true;
+    uint8_t overflowVal = 1;
+    BaseType_t queueSendStatus = xQueueSendFromISR(timerQ, (void *)&overflowVal, NULL);
+    if (queueSendStatus != pdTRUE)
+    {
+        printf("timerQ is full (timer callback)\n");
+    }
 }
 
 int initLoadShedder(void)
 {
-
     shedTimer = xTimerCreate("shedTimer", SHED_TIME_MS / portTICK_PERIOD_MS, pdTRUE, (void *)0, timer_shed_isr);
 
     // Start vDisplayOutputTask task
@@ -93,9 +96,8 @@ void loadShedTick(FreqReading fr, enum State *state)
         }
         break;
     case SHED:
-        if (timerOverflow)
+        while(xQueueReceive(timerQ, NULL, 0))
         {
-            timerOverflow = false;
             shedLoad(true, 0);
         }
         if ((fr.freq > freqThresh) && (fr.RoC < rocThresh))
@@ -111,9 +113,8 @@ void loadShedTick(FreqReading fr, enum State *state)
 
         break;
     case RECONNECT:
-        if (timerOverflow)
+        while(xQueueReceive(timerQ, NULL, 0))
         {
-            timerOverflow = false;
             shedLoad(false, 0);
         }
 
