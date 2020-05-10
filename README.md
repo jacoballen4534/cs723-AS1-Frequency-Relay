@@ -15,10 +15,6 @@
 
 # Prerequisites
 
-## Simulator
-
-- MinGW (tested with version 8.2.0)
-
 ## Real Device
 
 - Quartus II 13.0 (Full, Web or Lite edition)
@@ -31,35 +27,9 @@
   This can be checked in Control Panel > Search 'edit the system environment variables' > Environment Variables.  
   `$SOPC_KIT_NIOS2` should be the path to nios2. An example of this is `C:\altera\13.0\nios2eds` and will change slightly depending on the version of nios installed.
 
-# Running The Simulator
+## Simulator
 
-Due to a variety in computer set ups, there are 3 options for running the simulator with a decreasing amounts of automation. If one does not work, please try the next option.
-
-### First Option
-
-Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_simulator.bat`
-
-### Second Option
-
-1. Open a terminal (tested using GitBash, do not use the nios command shell)
-
-2. Navigate to <path/to/repo>/cs723-AS1 directory.
-
-3. Run the command `./start.sh simulator app` to build and launch the simulator with the display app.
-
-4. (Optional) Run `./start.sh simulator clean` to remove the generated object and dependency files.
-
-### Third Option
-
-1. Open a terminal (tested using GitBash, do not use the nios command shell)
-
-2. Navigate to <path/to/repo>/cs723-AS1/Simulations/gp21_cs723_a1/Build directory.
-
-3. Run the command `make` to build simulator.
-
-4. Run the command `./gp21_cs723_a1_simulator.exe | py ../../../App/display_app.py` to run the frequency analyser and connect it to the display app.
-
-5. (Optional) Run `$ make clean` to remove the generated object and dependency files.
+- MinGW (tested with version 8.2.0)
 
 # Running on the DE2-115 Board
 
@@ -77,7 +47,7 @@ Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_simulator.bat
 
 NOTE: This build does not require eclipse or an eclipse project
 
-Like the simulator, there are 3 options to run this project. If one does not work, please try the next option.
+Due to a variety in computer set-ups, there are 3 options for running the project with a decreasing amounts of automation. If one does not work, please try the next option.
 
 ### First Option
 
@@ -107,6 +77,62 @@ Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_nios.bat`
 
 5. (Optional) To view the output, you can view the STDOUT by running `nios2-terminal` from the command shell
    - TODO: Pipe into python app, `nios2-terminal | python3 app.py`
+
+# Running The Simulator
+
+Similar to the real-board instructions, there are 4 options to run this project. If one does not work, please try the next option.
+
+Additional things to note:
+
+1. The command window must be in focus (not the display app) in order to inputs to be registered.
+2. The slide switches are mapped to keys F1 - F10
+3. The push buttons are mapped to keys `z,x,c,v` (z = maintenance toggle).
+4. `q` will quit the simulator and close the app.
+5. The LCD is shown inside the display app.
+
+### First Option
+
+Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_simulator.bat`
+
+### Second Option
+
+1. Open a terminal (tested using GitBash, do not use the nios command shell)
+
+2. Navigate to <path/to/repo>/cs723-AS1 directory.
+
+3. Run the command `./start.sh simulator app` to build and launch the simulator with the display app.
+
+4. (Optional) Run `./start.sh simulator clean` to remove the generated object and dependency files.
+
+### Third Option
+
+1. Open a terminal (tested using GitBash, do not use the nios command shell)
+
+2. Navigate to <path/to/repo>/cs723-AS1/Simulations/gp21_cs723_a1/Build directory.
+
+3. Run the command `make` to build simulator.
+
+4. Run the command `./gp21_cs723_a1_simulator.exe | ../../../App/dist/display_app.exe` to run the frequency analyser and connect it to the display app.
+
+5. (Optional) Run `make clean` to remove the generated object and dependency files.
+
+### Forth Option
+
+If the keyboard input is just getting printed on the git-bash console and the simulator does not respond to them, you will need to use the Command Prompt instead.
+
+NOTE: Still build the project with git-bash.
+
+1. Open a terminal (tested using GitBash)
+
+2. Navigate to <path/to/repo>/cs723-AS1/Simulations/gp21_cs723_a1/Build directory.
+
+3. Run the command `make` to build simulator.
+
+4. Open Command Prompt
+
+5. Navigate to <path/to/repo>\cs723-AS1\Simulations\gp21_cs723_a1\Build directory.
+
+6. In the Command Prompt window, run the command `gp21_cs723_a1_simulator.exe | ..\..\..\App\dist\display_app.exe` to run the frequency analyser and connect it to the display app.
 
 # Common Simulator Issues
 
