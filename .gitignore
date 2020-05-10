@@ -31,7 +31,8 @@
 !Nios/software/gp21_cs723_a1_bsp/**
 Nios/software/gp21_cs723_a1_bsp/obj/**
 Nios/software/gp21_cs723_a1_bsp/libhal_bsp.a
-!App/**
+!App/display_app.py
+!App/dist/**
 !run_nios.bat
 !run_simulator.bat
 
