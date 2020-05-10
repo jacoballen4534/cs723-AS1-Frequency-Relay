@@ -8,6 +8,7 @@ extern double rocThresh;
 
 extern SemaphoreHandle_t xIsMaintenanceMutex;
 extern bool isMaintenance;
+extern SemaphoreHandle_t xIsManagingMutex;
 extern bool isManaging;
 
 #endif

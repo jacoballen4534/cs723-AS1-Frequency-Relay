@@ -135,7 +135,14 @@ void vUserInputTask(void *pvParameters)
 		switch (input)
 		{
 		case PUSH_BUTTON_SPECIAL_VALUE: // Toggle maintainence mode
-			if(isManaging) break;
+			xSemaphoreTake(xIsManagingMutex, portMAX_DELAY);
+			if (isManaging)
+			{
+				xSemaphoreGive(xIsManagingMutex);
+				break;
+			}
+			xSemaphoreGive(xIsManagingMutex);
+
 			xSemaphoreTake(xIsMaintenanceMutex, USER_INPUT_BUFFER_BLOCK_TIME);
 			isMaintenance = !isMaintenance;
 			xSemaphoreGive(xIsMaintenanceMutex);

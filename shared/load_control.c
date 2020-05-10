@@ -122,10 +122,15 @@ void vLoadControlTask(void *pvParameters)
 
         if (notifySource >= WALL_SWITCH_NOTIFICATION)
         {
+
+            xSemaphoreTake(xIsManagingMutex, portMAX_DELAY);
+            bool localIsManaging = isManaging;
+            xSemaphoreGive(xIsManagingMutex);
+
             //read switch vals and update loads
             xSemaphoreTake(xSwitchMutex, portMAX_DELAY);
             uint8_t switchIndex = notifySource - WALL_SWITCH_NOTIFICATION;
-            if(isManaging)
+            if(localIsManaging)
             {
                 if(switchVal[switchIndex] == 0 && shedVal[switchIndex] == 1) shedVal[switchIndex] = 0; //manually turned off switches are not longer 'managed'
                 latchedSwitches[switchIndex] = latchedSwitches[switchIndex] & switchVal[switchIndex];

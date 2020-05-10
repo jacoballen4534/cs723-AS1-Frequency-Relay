@@ -24,7 +24,8 @@ double freqThresh;
 double rocThresh;
 SemaphoreHandle_t xIsMaintenanceMutex;
 bool isMaintenance = false;
-bool isManaging = false; //fixme: mutex guard
+bool isManaging = false;
+SemaphoreHandle_t xIsManagingMutex;
 
 #define SHED_TIME_MS 500
 
@@ -76,8 +77,9 @@ void loadShedTick(FreqReading fr, enum State *state)
     //since we want to abort this function if in maintenance, make sure the mutex is released
     xSemaphoreTake(xIsMaintenanceMutex, USER_INPUT_BUFFER_BLOCK_TIME);
     bool localMaintenance = isMaintenance;
-    uint8_t flushTimerFlagInto;
     xSemaphoreGive(xIsMaintenanceMutex);
+
+    uint8_t flushTimerFlagInto;
 
     if (localMaintenance && (*state) == IDLE) //only enter maintenance mode from IDLE
     {
@@ -90,7 +92,9 @@ void loadShedTick(FreqReading fr, enum State *state)
         if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))
         {
             (*state) = SHED;
+            xSemaphoreTake(xIsManagingMutex, portMAX_DELAY);
             isManaging = true;
+            xSemaphoreGive(xIsManagingMutex);
             printf("_fsm,%d\n", (*state));
             shedLoad(true, fr.timestamp);
             xTimerStart(shedTimer, TIMER_START_STOP_WAIT_TIME);
@@ -104,7 +108,9 @@ void loadShedTick(FreqReading fr, enum State *state)
         if ((fr.freq > freqThresh) && (fr.RoC < rocThresh))
         {
             (*state) = RECONNECT;
+            xSemaphoreTake(xIsManagingMutex, portMAX_DELAY);
             isManaging = true;
+            xSemaphoreGive(xIsManagingMutex);
             printf("_fsm,%d\n", (*state));
             if (xTimerReset(shedTimer, TIMER_START_STOP_WAIT_TIME) != pdPASS)
             {
@@ -122,7 +128,9 @@ void loadShedTick(FreqReading fr, enum State *state)
         if ((fr.freq < freqThresh) || (fr.RoC > rocThresh))
         {
             (*state) = SHED;
+            xSemaphoreTake(xIsManagingMutex, portMAX_DELAY);
             isManaging = true;
+            xSemaphoreGive(xIsManagingMutex);
             printf("_fsm,%d\n", (*state));
             if (xTimerReset(shedTimer, TIMER_START_STOP_WAIT_TIME) != pdPASS)
             {
@@ -133,7 +141,9 @@ void loadShedTick(FreqReading fr, enum State *state)
         if (allConnected)
         {
             (*state) = IDLE;
+            xSemaphoreTake(xIsManagingMutex, portMAX_DELAY);
             isManaging = false;
+            xSemaphoreGive(xIsManagingMutex);
             forceUpdateSwitches();
             printf("_fsm,%d\n", (*state));
             xTimerStop(shedTimer, TIMER_START_STOP_WAIT_TIME);

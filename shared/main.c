@@ -96,6 +96,7 @@ void initSharedVars(void)
 	updateType = Frequency;
 
 	xIsMaintenanceMutex = xSemaphoreCreateMutex();
+	xIsManagingMutex = xSemaphoreCreateMutex();
 	isMaintenance = false;
 	newIsMaintenanceToDisplayQ = xQueueCreate(MAIL_BOX_LENGTH, sizeof(uint8_t));
 	handleQueueCreateError(newIsMaintenanceToDisplayQ, "newIsMaintenanceToDisplayQ");
