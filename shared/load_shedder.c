@@ -138,7 +138,11 @@ void loadShedTick(FreqReading fr, enum State *state)
             }
         }
 
-        if (allConnected)
+        xSemaphoreTake(xAllConnectedMutex, portMAX_DELAY);
+        bool localAllConnected = allConnected;
+        xSemaphoreGive(xAllConnectedMutex);
+
+        if (localAllConnected)
         {
             (*state) = IDLE;
             xSemaphoreTake(xIsManagingMutex, portMAX_DELAY);

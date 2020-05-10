@@ -37,6 +37,7 @@ extern QueueHandle_t shedReconnectQ;
 extern QueueHandle_t loadControlNotifyQ;
 
 extern QueueHandle_t newLoadStatusToDisplayQ;
+extern SemaphoreHandle_t xAllConnectedMutex;
 /********************************/
 
 #define INPUT_Q_LENGTH 30

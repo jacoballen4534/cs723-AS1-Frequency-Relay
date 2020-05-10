@@ -7,6 +7,7 @@
 
 // GLOBALS
 bool allConnected = false;
+SemaphoreHandle_t xAllConnectedMutex;
 QueueHandle_t loadControlNotifyQ;
 QueueHandle_t shedReconnectQ;
 QueueHandle_t newLatencyToDisplayQ;
@@ -74,19 +75,24 @@ void updateLEDs()
 
 void updateLoadStatus()
 {
-    allConnected = true;
+    bool localAllConnected = true;
     uint8_t i;
     uint8_t mailBoxNotification = 1;
 
     for (i = 0; i < NUM_LOADS; i++)
     {
-        if((shedVal[i] == 1 && switchVal[i] == 1) || (latchedSwitches[i] != switchVal[i])) allConnected = false; //if the load is shed even though the switch is up, we're not done reconnecting
+        if ((shedVal[i] == 1 && switchVal[i] == 1) || (latchedSwitches[i] != switchVal[i]))
+            localAllConnected = false; //if the load is shed even though the switch is up, we're not done reconnecting
 
         if (loadStatus[i] != ((latchedSwitches[i] == 1) && (shedVal[i] == 0)))
             xQueueOverwrite(newLoadStatusToDisplayQ, (void *)&mailBoxNotification);
 
         loadStatus[i] = ((latchedSwitches[i] == 1) && (shedVal[i] == 0));
     }
+
+    xSemaphoreTake(xAllConnectedMutex, portMAX_DELAY);
+    allConnected = localAllConnected;
+    xSemaphoreGive(xAllConnectedMutex);
     updateLEDs();
 }
 
