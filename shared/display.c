@@ -59,6 +59,7 @@ void vDisplayOutputTask(void *pvParameters)
     int i;
     uint8_t mailBoxReceive;
     char LCDPrintBuffer[USER_INPUT_BUFFER_LENGTH + 10] = {0}; // Allow room for Roc or Fre and terminator
+    printf("_start\n");
     while (1)
     {
         vTaskDelay(20 / portTICK_PERIOD_MS);
@@ -76,7 +77,6 @@ void vDisplayOutputTask(void *pvParameters)
         }
 
         // ---------------------- Send load status ----------------------
-        //TODO: Use mutex
         if (xQueueReceive(newLoadStatusToDisplayQ, (void *)&mailBoxReceive, (TickType_t)0))
         {
             printf("_l,");
@@ -88,7 +88,6 @@ void vDisplayOutputTask(void *pvParameters)
         }
 
         // ---------------------- Send switch status ----------------------
-        //TODO: Use mutex
         if (xQueueReceive(newSwitchValToDisplayQ, (void *)&mailBoxReceive, (TickType_t)0))
         {
             printf("_s,");
@@ -102,7 +101,6 @@ void vDisplayOutputTask(void *pvParameters)
         vTaskDelay(20 / portTICK_PERIOD_MS);
 
         // ---------------------- Send thresholds ----------------------
-
         if (xQueueReceive(newThresholdToDisplayQ, (void *)&mailBoxReceive, (TickType_t)0))
         {
             xSemaphoreTake(xThreshMutex, PRINT_MUTEX_BLOCK_TIME);
@@ -112,7 +110,6 @@ void vDisplayOutputTask(void *pvParameters)
         }
 
         // ---------------------- Send latency ----------------------
-
         if (xQueueReceive(newLatencyToDisplayQ, (void *)&mailBoxReceive, (TickType_t)0))
         {
             printf("_lt,%.0f,%.0f,%.0f,%.2f\n", firstShedLatency, minShedLatency, maxShedLatency, avgShedLatency); //FIXME: Mutex guard

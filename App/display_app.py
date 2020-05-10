@@ -1,7 +1,6 @@
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
 from matplotlib.ticker import (AutoMinorLocator, MultipleLocator)
-from numpy import linspace
 import sys
 import PySimpleGUI as sg
 import threading
@@ -28,16 +27,16 @@ FSMDecoder = {
     '1': 'SHED',
     '2': 'RECONNECT'
 }
-freq_q = collections.deque([0]*NUM_POINTS, maxlen=NUM_POINTS)
-roc_q = collections.deque([0]*NUM_ROC_POINTS, maxlen=NUM_ROC_POINTS)
-ts_q = collections.deque([0]*NUM_POINTS, maxlen=NUM_POINTS)
+freq_q = collections.deque([float('NaN')]*NUM_POINTS, maxlen=NUM_POINTS)
+roc_q = collections.deque([float('NaN')]*NUM_ROC_POINTS, maxlen=NUM_ROC_POINTS)
+ts_q = collections.deque([float('NaN')]*NUM_POINTS, maxlen=NUM_POINTS)
 switchStatus = "0 "*NUM_OF_SWITCHES
 loadStatus = "0 "*NUM_OF_LOADS
 FSMState = ""
-currentShedLatency = 0
-averageShedLatency = 0.00
-minShedLatency = 9999.0
-maxShedLatency = 0
+recentShedLatencies = collections.deque([float('NaN')]*5, maxlen=5)
+averageShedLatency = float('NaN')
+minShedLatency = float('NaN')
+maxShedLatency = float('NaN')
 frequencyThreshold = 0
 rocThreshold = 0
 totalRunTime = 0
@@ -55,7 +54,7 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 
 class ReadInput(threading.Thread):
     def run(self):
-        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested, frequencyThreshold, rocThreshold, currentShedLatency, minShedLatency, maxShedLatency, averageShedLatency, isMaintenance, lcdDisplay
+        global freq_q, roc_q, ts_q, switchStatus, loadStatus, FSMState, quitRequested, frequencyThreshold, rocThreshold, recentShedLatencies, minShedLatency, maxShedLatency, averageShedLatency, isMaintenance, lcdDisplay
         try:
             for line in sys.stdin:
                 if ("_f," in line):
@@ -82,7 +81,7 @@ class ReadInput(threading.Thread):
                     rocThreshold = float(key)
                 elif("_lt," in line):
                     keys = line.split(',')
-                    currentShedLatency = float(keys[1])
+                    recentShedLatencies.appendleft(float(keys[1]))
                     minShedLatency = float(keys[2])
                     maxShedLatency = float(keys[3])
                     averageShedLatency = float(keys[4])
@@ -92,6 +91,10 @@ class ReadInput(threading.Thread):
                 elif("_m," in line):
                     [_, key] = line.split(",")
                     isMaintenance = key
+                elif("_start" in line):
+                    freq_q = collections.deque([float('NaN')]*NUM_POINTS, maxlen=NUM_POINTS)
+                    roc_q = collections.deque([float('NaN')]*NUM_ROC_POINTS, maxlen=NUM_ROC_POINTS)
+                    ts_q = collections.deque([float('NaN')]*NUM_POINTS, maxlen=NUM_POINTS)
                 # elif(len(line) > 1):
                 #     print(line)
         except ValueError as e:
@@ -120,19 +123,19 @@ def main():
     t.start()
 
     text_layout = [
-        [sg.Text('', size=(25, 1), font=('System', 16),
+        [sg.Text('', size=(30, 1), font=('System', 16),
                 justification='left', key='switchStatusText', background_color='gray', text_color='black'),
-                 sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16), justification='left', key='loadStatusText', background_color='gray', text_color='black'),
-                 sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16), justification='left', key='maintenanceText', background_color='gray', text_color='black')],
-        [sg.Text('', size=(25, 1), font=('System', 16),
+                 sg.Text('', pad=((45,0),3),size=(30, 1), font=('System', 16), justification='left', key='loadStatusText', background_color='gray', text_color='black'),
+                 sg.Text('', pad=((45,0),3),size=(30, 1), font=('System', 16), justification='left', key='maintenanceText', background_color='gray', text_color='black')],
+        [sg.Text('', size=(30, 1), font=('System', 16),
                 justification='left', key='FSMStateText', background_color='gray', text_color='black'), 
-                sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16), justification='left', key='totalUpTimeText', background_color='gray', text_color='black'),
-                sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16), justification='left', key='lcdText', background_color='black', text_color='lawn green')],
-        [sg.Text('', size=(25, 1), font=('System', 16),
-                justification='left', key='currentReactionTime', background_color='gray', text_color='black'), sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16),
+                sg.Text('', pad=((45,0),3),size=(30, 1), font=('System', 16), justification='left', key='totalUpTimeText', background_color='gray', text_color='black'),
+                sg.Text('', pad=((45,0),3),size=(30, 1), font=('System', 16), justification='left', key='lcdText', background_color='black', text_color='lawn green')],
+        [sg.Text('', size=(30, 1), font=('System', 16),
+                justification='left', key='currentReactionTime', background_color='gray', text_color='black'), sg.Text('', pad=((45,0),3),size=(30, 1), font=('System', 16),
                                                                                                                                             justification='left', key='averageReactionTimeText', background_color='gray', text_color='black')],
-        [sg.Text('', size=(25, 1), font=('System', 16),
-                justification='left', key='minReactionTime', background_color='gray', text_color='black'), sg.Text('', pad=((45,0),3),size=(25, 1), font=('System', 16),
+        [sg.Text('', size=(30, 1), font=('System', 16),
+                justification='left', key='minReactionTime', background_color='gray', text_color='black'), sg.Text('', pad=((45,0),3),size=(30, 1), font=('System', 16),
                                                                                                                                    justification='left', key='maxReactionTimeText', background_color='gray', text_color='black')],
     ]
 
@@ -236,13 +239,13 @@ def main():
         loadTextBox.update(f'Loads:        {loadStatus}')
         # Update FSM
         FSMTextBox.update(f'FSM State: {FSMState}')
-        totalUpTimeTextBox.update(f'Total uptime(ms):  {ts_q[-1]}')
+        totalUpTimeTextBox.update(f'Total uptime(s):  {ts_q[-1] / 1000:.2f}')
         currentReactionTextBox.update(
-            f'Current Shed Latency:  {currentShedLatency:>03}ms')
+            f'Recent Latency: {recentShedLatencies[0]:>02},{recentShedLatencies[1]:>02},{recentShedLatencies[2]:>02},{recentShedLatencies[3]:>02},{recentShedLatencies[4]:>02}')
         averageReactionTextBox.update(
             f'Avg Shed Latency:       {averageShedLatency:>03}ms')
         minReactionTextBox.update(
-            f'Min Shed Latency:        {minShedLatency:>03}ms')
+            f'Min Latency:       {minShedLatency:>03}ms')
         maxReactionTextBox.update(
             f'Max Shed Latency:      {maxShedLatency:>03}ms')
         maintenanceTextBox.update(

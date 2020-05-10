@@ -1,2 +1,4 @@
 @echo off
-start start.sh nios
+setlocal
+cd /d %~dp0
+start /D %~dp0 ./start.sh nios
