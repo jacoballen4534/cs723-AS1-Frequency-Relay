@@ -138,8 +138,6 @@ void vUserInputTask(void *pvParameters)
 			if(isManaging) break;
 			xSemaphoreTake(xIsMaintenanceMutex, USER_INPUT_BUFFER_BLOCK_TIME);
 			isMaintenance = !isMaintenance;
-			printf("isMaintenance updated to ");
-			isMaintenance == true ? printf("true\n") : printf("false\n");
 			xSemaphoreGive(xIsMaintenanceMutex);
 			xQueueOverwrite(newIsMaintenanceToDisplayQ, (void *)&mailBoxNotification);
 
@@ -244,7 +242,6 @@ void vUserInputTask(void *pvParameters)
 			{
 				printf("userInputBuffer is full\n");
 			}
-
 			break;
 		}
 	}
