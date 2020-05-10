@@ -76,9 +76,10 @@ void loadShedTick(FreqReading fr, enum State *state)
     //since we want to abort this function if in maintenance, make sure the mutex is released
     xSemaphoreTake(xIsMaintenanceMutex, USER_INPUT_BUFFER_BLOCK_TIME);
     bool localMaintenance = isMaintenance;
+    uint8_t flushTimerFlagInto;
     xSemaphoreGive(xIsMaintenanceMutex);
 
-    if(localMaintenance && (*state) == IDLE) //only enter maintenance mode from IDLE
+    if (localMaintenance && (*state) == IDLE) //only enter maintenance mode from IDLE
     {
         return;
     }
@@ -96,7 +97,7 @@ void loadShedTick(FreqReading fr, enum State *state)
         }
         break;
     case SHED:
-        while(xQueueReceive(timerQ, NULL, 0))
+        while (xQueueReceive(timerQ, &flushTimerFlagInto, 0))
         {
             shedLoad(true, 0);
         }
@@ -113,7 +114,7 @@ void loadShedTick(FreqReading fr, enum State *state)
 
         break;
     case RECONNECT:
-        while(xQueueReceive(timerQ, NULL, 0))
+        while (xQueueReceive(timerQ, &flushTimerFlagInto, 0))
         {
             shedLoad(false, 0);
         }
