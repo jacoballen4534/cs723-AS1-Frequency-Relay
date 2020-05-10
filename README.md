@@ -89,6 +89,7 @@ Additional things to note:
 3. The push buttons are mapped to keys `z,x,c,v` (z = maintenance toggle).
 4. `q` will quit the simulator and close the app.
 5. The LCD is shown inside the display app.
+6. If the keyboard input is just getting printed on the git-bash console for options 1-3. You will need to use the Command Prompt instead (Option 4 & 5).
 
 ### First Option
 
@@ -118,7 +119,9 @@ Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_simulator.bat
 
 ### Forth Option
 
-If the keyboard input is just getting printed on the git-bash console and the simulator does not respond to them, you will need to use the Command Prompt instead.
+Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_simulator_in_cmd.bat`
+
+### Fifth Option
 
 NOTE: Still build the project with git-bash.
 

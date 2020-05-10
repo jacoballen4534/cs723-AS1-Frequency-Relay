@@ -34,6 +34,7 @@ Nios/software/gp21_cs723_a1_bsp/libhal_bsp.a
 !App/**
 !run_nios.bat
 !run_simulator.bat
+!run_simulator_in_cmd.bat
 
 
 
