@@ -195,8 +195,8 @@ def main():
         ax.set_ylabel("Freq (Hz)")
         ax.set_ylim([46.0, 52.0])
         ax.set_xlim(-TIMESPAN, 0)
-        ax.annotate("%.2f" % freq_q[-1], (NUM_POINTS-1,
-                                        freq_q[-1]), xytext=(NUM_POINTS + 6, freq_q[-1]), family='monospace')
+        ax.annotate("%.2f" % freq_q[-1], (0,
+                                        freq_q[-1]), family='monospace')
         if (freq_q[-1] > frequencyThreshold):
             ax.axhline(y=frequencyThreshold, color='g', linestyle='-')
         else:
@@ -213,11 +213,11 @@ def main():
         roc.set_xlim(-ROC_TIMESPAN, 0)
         roc.grid()                   # draw the grid
         if(roc_q[-1] >= 0.0):
-            roc.annotate("+%.2f" % roc_q[-1], (NUM_ROC_POINTS-1,
-                                          roc_q[-1]), xytext=(NUM_ROC_POINTS + 2, roc_q[-1]), family='monospace')
+            roc.annotate("+%.2f" % roc_q[-1], (0,
+                                          roc_q[-1]), family='monospace')
         else:
-            roc.annotate("%.2f" % roc_q[-1], (NUM_ROC_POINTS-1,
-                                          roc_q[-1]), xytext=(NUM_ROC_POINTS + 2, roc_q[-1]), family='monospace')
+            roc.annotate("%.2f" % roc_q[-1], (0,
+                                          roc_q[-1]), family='monospace')
 
         if (roc_q[-1] < rocThreshold):
             roc.axhline(y=rocThreshold, color='g', linestyle='-')
