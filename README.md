@@ -45,9 +45,9 @@ Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_simulator.bat
 
 2. Navigate to <path/to/repo>/cs723-AS1 directory.
 
-3. Run the command `make simulator app` to build and launch the simulator with the display app.
+3. Run the command `./start.sh simulator app` to build and launch the simulator with the display app.
 
-4. (Optional) Run `$ make simulator clean` to remove the generated object and dependency files.
+4. (Optional) Run `./start.sh simulator clean` to remove the generated object and dependency files.
 
 ### Third Option
 
@@ -89,9 +89,9 @@ Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_nios.bat`
 
 2. Navigate to <path/to/repo>/cs723-AS1 directory.
 
-3. Run the command `make nios` to load the project onto the board and connect it to the display app.
+3. Run the command `./start.sh nios` to load the project onto the board and connect it to the display app.
 
-4. (Optional) Run `$ make nios clean` to remove the generated object and dependency files.
+4. (Optional) Run `$./start.sh nios clean` to remove the generated object and dependency files.
 
 ### Third Option
 
