@@ -9,7 +9,7 @@ if [ $1 ] && [ $1 == "simulator" ]; then
     elif [ $2 ] && [ $2 == "app" ]; then
         cd Simulations/gp21_cs723_a1/Build
         make all
-        ./gp21_cs723_a1_simulator.exe | ../../../App/dist/display_app/display_app.exe
+        ./gp21_cs723_a1_simulator.exe | ../../../App/dist/display_app.exe
     elif [ -z $2 ] || ([ $2 ] &&  [ $2 == "all" ]); then
         cd Simulations/gp21_cs723_a1/Build
         make all
@@ -25,7 +25,7 @@ elif [ $1 ] && [ $1 == "nios" ]; then
     elif [ -z $2 ] || ([ $2 ] &&  [ $2 == "all" ]); then
         echo "Running Nios II shell start script"
         ./nios2_command_shell.sh bash -c "cd $PROJECT_PATH/Nios/software/gp21_cs723_a1; make"
-        echo "cd $PROJECT_PATH/App/dist/display_app; nios2-terminal | ./display_app.exe & nios2-download -g ../../../Nios/software/gp21_cs723_a1/gp21_cs723_a1.elf" | ./'Nios II Command Shell.bat'
+        echo "cd $PROJECT_PATH/App/dist/; nios2-terminal | ./display_app.exe & nios2-download -g ../../Nios/software/gp21_cs723_a1/gp21_cs723_a1.elf" | ./'Nios II Command Shell.bat'
     fi
 fi
     
