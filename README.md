@@ -73,10 +73,16 @@ Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_nios.bat`. Th
 The frequency relay is set up for 8 loads by default. LEDR0 (right) represents the status of the lowest priority load, and LEDR7 (left) represents the highest.
 LEDG0-LEDG7 display the management (shed/unshed) status of the loads.
 Note that on the app, the lowest priority load is represented on the left and the highest on the right.
+
+
 KEY3 can be used to enable/disable maintenance mode as long as the loads are not being automatically managed. Maintenance mode status is displayed on the app.
+
+
 Keyboard input can be used to set the thresholds. The current keyboard input is displayed on the DE2's LCD, as well as the app display.
 Use keyboard letters 'F' and 'R' to change modes between setting frequency and rate-of-change thresholds. This mode change should be reflected on the LCD prompt.
 Type in a threshold value and hit the 'enter' key to assign it. The threshold change will be reflected on the app graph.
+
+
 Be mindful not to accidentally press KEY0, as it is mapped to a Nios hard reset. 
 
 # Running The Simulator
