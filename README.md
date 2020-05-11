@@ -80,7 +80,7 @@ KEY3 can be used to enable/disable maintenance mode as long as the loads are not
 
 Keyboard input can be used to set the thresholds. The current keyboard input is displayed on the DE2's LCD, as well as the app display.
 Use keyboard letters 'F' and 'R' to change modes between setting frequency and rate-of-change thresholds. This mode change should be reflected on the LCD prompt.
-Type in a threshold value and hit the 'enter' key to assign it. The threshold change will be reflected on the app graph.
+Type in a threshold value and hit the 'enter' key to assign it. The threshold change will be reflected on the app graph. Backspaces and decimal points are supported.
 
 
 Be mindful not to accidentally press KEY0, as it is mapped to a Nios hard reset. 
