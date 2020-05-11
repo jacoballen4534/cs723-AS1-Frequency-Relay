@@ -1,11 +1,3 @@
-## Assumptions Made
-
-- The brief states that while the relay is managing a load, loads can be manually turned off but not back on.
-  We assume that enabling the switch during management will still allow the relay to manage that load during this reconnect cycle.
-  If the relay has already skipped this load and proceeded to re-enabling lower priority loads, the relay will return to re-enable this load after the next 500ms tick due to the higher priority.
-- When disabling loads, the switches take precedence over the relay. Loads disabled manually will not be reflected in the green LED output representing management, even if the switch is disabled after the load has been managed. (If the switch is re-enabled, it will again be considered managed by the load)
-- Maintenance mode will only be entered when the load shedder is idle to prevent complications relating to unknown state
-
 # Setting Up The Files
 
 1. Create a folder for the source files to be located.  
@@ -15,7 +7,7 @@
 
 # Prerequisites
 
-## Real Device
+## DE2-115 Target
 
 - Quartus II 13.0 (Full, Web or Lite edition)
 
@@ -27,9 +19,9 @@
   This can be checked in Control Panel > Search 'edit the system environment variables' > Environment Variables.  
   `$SOPC_KIT_NIOS2` should be the path to nios2. An example of this is `C:\altera\13.0\nios2eds` and will change slightly depending on the version of nios installed.
 
-## Simulator
+## Simulator Target
 
-- MinGW (tested with version 8.2.0)
+- MinGW (tested with version 8.2.0) (Should be included as part of your Nios install)
 
 # Running on the DE2-115 Board
 
@@ -51,7 +43,7 @@ Due to a variety in computer set-ups, there are 3 options for running the projec
 
 ### First Option
 
-Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_nios.bat`
+Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_nios.bat`. The batch file should build the software, program it to the board, and launch the app automatically.
 
 ### Second Option
 
@@ -75,8 +67,17 @@ Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_nios.bat`
 
 4. When the build is complete, you can load the program onto the board by executing `nios2-download -g gp21_cs723_a1.elf`
 
-5. (Optional) To view the output, you can view the STDOUT by running `nios2-terminal` from the command shell
-   - TODO: Pipe into python app, `nios2-terminal | python3 app.py`
+5. Open another nios II command shell and navigate to <path/to/repo>/cs723-AS1/App/Dist, and run the command `nios2-terminal | display_app.exe`
+
+# Usage Instructions:
+The frequency relay is set up for 8 loads by default. LEDR0 (right) represents the status of the lowest priority load, and LEDR7 (left) represents the highest.
+LEDG0-LEDG7 display the management (shed/unshed) status of the loads.
+Note that on the app, the lowest priority load is represented on the left and the highest on the right.
+KEY3 can be used to enable/disable maintenance mode as long as the loads are not being automatically managed. Maintenance mode status is displayed on the app.
+Keyboard input can be used to set the thresholds. The current keyboard input is displayed on the DE2's LCD, as well as the app display.
+Use keyboard letters 'F' and 'R' to change modes between setting frequency and rate-of-change thresholds. This mode change should be reflected on the LCD prompt.
+Type in a threshold value and hit the 'enter' key to assign it. The threshold change will be reflected on the app graph.
+Be mindful not to accidentally press KEY0, as it is mapped to a Nios hard reset. 
 
 # Running The Simulator
 
@@ -117,7 +118,7 @@ Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_simulator.bat
 
 5. (Optional) Run `make clean` to remove the generated object and dependency files.
 
-### Forth Option
+### Fourth Option
 
 Open navigate to <path/to/repo>/cs723-AS1 and double click on `run_simulator_in_cmd.bat`
 
@@ -147,3 +148,7 @@ NOTE: Still build the project with git-bash.
 - The makefile for either the simulator or the nios build will fail due to being unable to find some files.
   - It is important that you only use cmd or git bash for the simulator build, and only use nios ii command shell for the nios build
   - These two terminals have different PATH variables / execute from different places, so will fail to find source files
+ 
+ # Common Nios Issues
+ - JTAG can not be acquired because something else has already taken exclusive control. Can usually be fixed by unplugging and reconnecting the programmer cable.
+ - Verify Failed occurs if the .sof is not flashed to the board before running the batch file.
